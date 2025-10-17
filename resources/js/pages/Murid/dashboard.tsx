@@ -7,7 +7,7 @@ import { PageProps } from '@inertiajs/core';
 import BottomNavbar from '@/components/Murid/BottomNavbar';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://192.168.1.105:8000'; // <-- tidak ada spasi
+axios.defaults.baseURL = 'http://192.168.1.101:8000'; // <-- tidak ada spasi
 
 export default function QrCode({ qrCode: initialQrCode, auth }: { qrCode: string } & any) {
   const [qrCode, setQrCode]   = useState<string>(initialQrCode);

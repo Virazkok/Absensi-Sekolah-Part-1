@@ -90,7 +90,9 @@ export default function CreateUserModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-indigo-600 text-white">+ Tambah User</Button>
+        <Button className="bg-[#E4D2FC] hover:bg-[#D7BFFD] text-black font-medium px-4 py-2 rounded-lg">
+          Tambah User
+        </Button>
       </DialogTrigger>
 
      <DialogContent

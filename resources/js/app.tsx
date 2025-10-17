@@ -42,7 +42,7 @@ if (token) {
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-axios.defaults.baseURL = 'http://192.168.1.105:8000'; // ← ini penting!
+axios.defaults.baseURL = 'http://192.168.1.101:8000'; // ← ini penting!
 
 
 

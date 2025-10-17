@@ -7,13 +7,14 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import CreateUserModal from "@/pages/auth/register"; // import modal baru
+import CreateUserModal from "@/pages/auth/register";
 
 type Props = {
   users: {
     data: {
       id: number;
       name: string;
+      username?: string;
       role: string;
       status: string;
       created_at: string;
@@ -27,11 +28,9 @@ type Props = {
 export default function UserManagement() {
   const { props } = usePage<Props>();
   const { users } = props;
-
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
 
-  // 🔍 Filtering
   const filteredUsers = useMemo(() => {
     return users.data.filter((u) => {
       const matchSearch = u.name.toLowerCase().includes(search.toLowerCase());
@@ -41,169 +40,174 @@ export default function UserManagement() {
   }, [users.data, search, filterRole]);
 
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900">
+    <div className="min-h-screen bg-[#F8F8F8] text-gray-900">
       <Head title="User Management" />
-      <div className="max-w-full">
-        <div className="flex items-start gap-6">
-         {/* Sidebar */}
-                  <aside className="w-56 bg-white h-screen p-4 shadow">
-                    <nav className="space-y-2 text-sm">
-                      <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
-                      <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-                        className="p-2 rounded bg-gray-200 font-medium cursor-pointer">👥 User Manajemen</div>
-                      <div onClick={() => (window.location.href = '/admin/events')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
-                      <div
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/eskul')}
-                      >
-                        ⚽ Ekstrakurikuler
-                      </div>
-                      <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-                      >📈 Riwayat Kehadiran
-                      </div>
-                       <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-                      >📈 Statistik Kehadiran</div>
-                      <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-                      >📄 Laporan</div>
-                    </nav>
-                  </aside>
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-56 bg-white h-screen p-4 shadow-sm border-r border-gray-200">
+          <nav className="space-y-2 text-sm">
+            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
+            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white">👥 User Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/events')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/eskul')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">⚽ Ekstrakurikuler</div>
+            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Riwayat Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📊 Statistik Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📄 Laporan</div>
+          </nav>
+        </aside>
 
-          {/* Konten utama - Tabel User Management */}
-          <main className="flex-1 bg-white p-6 rounded-xl shadow">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-lg font-semibold">Total User: {users.total}</div>
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-3">
-  <input
-    type="text"
-    placeholder="Cari nama..."
-    value={search}
-    onChange={(e) => setSearch(e.target.value)}
-    className="border rounded px-3 py-2 text-sm"
-  />
-  <select
-    value={filterRole}
-    onChange={(e) => setFilterRole(e.target.value)}
-    className="border rounded px-3 py-2 text-sm"
-  >
-    <option value="all">Semua Role</option>
-    <option value="murid">Murid</option>
-    <option value="admin">Admin</option>
-  </select>
+        {/* Konten utama */}
+        <main className="flex-1 p-8">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold">User Management</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Semua User <span className="font-semibold">{users.total}</span>
+              </p>
+            </div>
 
-  {/* Modal tambah user */}
-  <CreateUserModal />
-</div>    
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="cari nama"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="border rounded-lg px-3 py-2 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#CBB2F5]"
+                />
               </div>
+
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#CBB2F5]"
+              >
+                <option value="all">Filter Roles</option>
+                <option value="murid">Murid</option>
+                <option value="guru">Guru</option>
+                <option value="admin">Admin</option>
+              </select>
+
               
+              <CreateUserModal />
             </div>
+          </div>
 
-            {/* Table */}
-            <div className="overflow-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-gray-500">
-                    <th className="py-2 px-3">Nama</th>
-                    <th className="py-2 px-3">Role</th>
-                    <th className="py-2 px-3">Status</th>
-                    <th className="py-2 px-3">Tanggal dibuat</th>
-                    <th className="py-2 px-3 text-right">Aksi</th>
+          {/* Table */}
+          <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white">
+            <table className="min-w-full text-sm">
+              <thead className="bg-[#F4EAFF]">
+                <tr className="text-left text-gray-700 font-medium">
+                  <th className="py-3 px-4">Nama</th>
+                  <th className="py-3 px-4">Username</th>
+                  <th className="py-3 px-4">Roles</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Date Added</th>
+                  <th className="py-3 px-4">Latest Active</th>
+                  <th className="py-3 px-4 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredUsers.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="text-center text-gray-500 py-6">
+                      Tidak ada user
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.length === 0 && (
-                    <tr>
-                      <td colSpan={5} className="text-center text-gray-500 py-6">
-                        Tidak ada user
-                      </td>
-                    </tr>
-                  )}
-                  {filteredUsers.map((u) => (
-                    <tr key={u.id} className="border-b hover:bg-gray-50 transition">
-                      <td className="py-3 px-3">{u.name}</td>
-                      <td className="py-3 px-3 capitalize">{u.role}</td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            u.status === "active"
-                              ? "bg-green-100 text-green-700"
-                              : "bg-red-100 text-red-700"
-                          }`}
-                        >
-                          {u.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3">
-                        {new Date(u.created_at).toLocaleDateString("id-ID")}
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              ⋮
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>
-                              <Link
-                                href={route("admin.user.detail", u.id)}
-                                className="text-indigo-600 hover:underline"
-                              >
-                                Detaill
-                              </Link>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() =>
-                                confirm("Yakin hapus user ini?") &&
-                                alert(`Hapus user ${u.id}`)
-                              }
+                )}
+                {filteredUsers.map((u) => (
+                  <tr
+                    key={u.id}
+                    className="border-b hover:bg-[#FAF7FF] transition"
+                  >
+                    <td className="py-3 px-4">{u.name}</td>
+                    <td className="py-3 px-4">{u.username || "-"}</td>
+                    <td className="py-3 px-4 capitalize">{u.role}</td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          u.status === "aktif"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {u.status}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      {new Date(u.created_at).toLocaleDateString("id-ID")}
+                    </td>
+                    <td className="py-3 px-4 text-gray-500">–</td>
+                    <td className="py-3 px-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-none hover:bg-gray-100"
+                          >
+                            ⋮
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>
+                            <Link
+                              href={route("admin.user.detail", u.id)}
+                              className="text-[#7B5EF3]"
                             >
-                              Hapus
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                              Detail
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              confirm("Yakin hapus user ini?") &&
+                              alert(`Hapus user ${u.id}`)
+                            }
+                          >
+                            Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-            {/* Pagination */}
-            <div className="flex justify-between items-center mt-4 text-sm">
-              <div>
-                Halaman {users.current_page} dari {users.last_page}
-              </div>
-              <div className="space-x-2">
-                {users.current_page > 1 && (
-                  <Link
-                    href={`?page=${users.current_page - 1}`}
-                    className="px-3 py-1 border rounded"
-                  >
-                    Prev
-                  </Link>
-                )}
-                {users.current_page < users.last_page && (
-                  <Link
-                    href={`?page=${users.current_page + 1}`}
-                    className="px-3 py-1 border rounded"
-                  >
-                    Next
-                  </Link>
-                )}
-              </div>
+          {/* Pagination */}
+          <div className="flex justify-between items-center mt-5 text-sm text-gray-600">
+            <div>
+              Halaman {users.current_page} dari {users.last_page}
             </div>
-          </main>
-        </div>
+            <div className="space-x-2">
+              {users.current_page > 1 && (
+                <Link
+                  href={`?page=${users.current_page - 1}`}
+                  className="px-3 py-1 border rounded"
+                >
+                  Prev
+                </Link>
+              )}
+              {users.current_page < users.last_page && (
+                <Link
+                  href={`?page=${users.current_page + 1}`}
+                  className="px-3 py-1 border rounded"
+                >
+                  Next
+                </Link>
+              )}
+            </div>
+          </div>
+        </main>
       </div>
     </div>
   );

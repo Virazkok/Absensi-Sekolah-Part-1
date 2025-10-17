@@ -1,4 +1,3 @@
-// resources/js/Pages/Admin/Event/AdminEvent.tsx
 import React, { useMemo, useState } from "react";
 import { usePage, Head, router } from "@inertiajs/react";
 import {
@@ -9,7 +8,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import ManageEventsModal from "./ManageEvents";
-
 
 interface Event {
   id: number;
@@ -31,8 +29,8 @@ export default function AdminEvent() {
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
+  const [showModal, setShowModal] = useState(false);
 
-  // 🔍 Filtering
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       const matchSearch = e.title.toLowerCase().includes(search.toLowerCase());
@@ -50,176 +48,175 @@ export default function AdminEvent() {
     }
   };
 
-  const [showModal, setShowModal] = useState(false);
-
-
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-900">
+    <div className="min-h-screen bg-[#F8F8F8] text-gray-900">
       <Head title="Event Management" />
-      <div className="max-w-full">
-        <div className="flex items-start gap-6">
-         {/* Sidebar */}
-                  <aside className="w-56 bg-white h-screen p-4 shadow">
-                    <nav className="space-y-2 text-sm">
-                      <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
-                      <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
-                      <div onClick={() => (window.location.href = '/admin/events')}
-                        className="p-2 rounded bg-gray-200 font-medium cursor-pointer">📅 Event Manajemen</div>
-                      <div
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/eskul')}
-                      >
-                        ⚽ Ekstrakurikuler
-                      </div>
-                      <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-                      >📈 Riwayat Kehadiran</div>
-                       <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-                      >📈 Statistik Kehadiran</div>
-                      <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-                      >📄 Laporan</div>
-                    </nav>
-                  </aside>
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-56 bg-white h-screen p-4 shadow-sm border-r border-gray-200">
+          <nav className="space-y-2 text-sm">
+            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
+            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/events')}
+              className="p-2 rounded bg-[#FFE9D6] font-medium cursor-pointer text-[#D76619]">📅 Event Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/eskul')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">⚽ Ekstrakurikuler</div>
+            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Riwayat Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📊 Statistik Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📄 Laporan</div>
+          </nav>
+        </aside>
 
-          {/* Konten utama - Tabel Event Management */}
-          <main className="flex-1 bg-white p-6 rounded-xl shadow">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-lg font-semibold">
-                Total Event: {events.length}
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="text"
-                  placeholder="Cari judul event..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="border rounded px-3 py-2 text-sm"
-                />
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="border rounded px-3 py-2 text-sm"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
-                </select>
-                <Button
-                  onClick={() => setShowModal(true)}
-                  className="bg-indigo-600 text-white rounded hover:bg-indigo-600"
-                >
-                  + Tambah Event
-                </Button>
-
-
-              </div>
+        {/* Main content */}
+        <main className="flex-1 p-8">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-2xl font-semibold">Event Management</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                Semua Event <span className="font-semibold">{events.length}</span>
+              </p>
             </div>
 
-            {/* Table */}
-            <div className="overflow-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b text-left text-gray-500">
-                    <th className="py-2 px-3">Judul</th>
-                    <th className="py-2 px-3">Tipe</th>
-                    <th className="py-2 px-3">Mulai</th>
-                    <th className="py-2 px-3">Selesai</th>
-                    <th className="py-2 px-3">Tanggal dibuat</th>
-                    <th className="py-2 px-3">Status</th>
-                    <th className="py-2 px-3 text-right">Aksi</th>
+            <div className="flex items-center gap-3">
+              <input
+                type="text"
+                placeholder="cari event"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="border rounded-lg px-3 py-2 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-[#CBB2F5]"
+              />
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#CBB2F5]"
+              >
+                <option value="all">Filter</option>
+                <option value="published">Aktif</option>
+                <option value="draft">Tidak Aktif</option>
+              </select>
+
+              <Button
+                onClick={() => setShowModal(true)}
+                className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-medium px-4 py-2 rounded-lg"
+              >
+                Tambah Event
+              </Button>
+            </div>
+          </div>
+
+          {/* Table */}
+          <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white">
+            <table className="min-w-full text-sm">
+              <thead className="bg-[#EFE6FF] border-b border-[#D9C9FF]">
+                <tr className="text-left text-gray-700 font-medium">
+                  <th className="py-3 px-4 w-16">No</th>
+                  <th className="py-3 px-4">Tanggal Awal</th>
+                  <th className="py-3 px-4">Tanggal Akhir</th>
+                  <th className="py-3 px-4">Nama Event</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4 text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredEvents.length === 0 && (
+                  <tr>
+                    <td colSpan={6} className="text-center text-gray-500 py-6">
+                      Tidak ada event
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredEvents.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={7}
-                        className="text-center text-gray-500 py-6"
+                )}
+                {filteredEvents.map((event, index) => (
+                  <tr key={event.id} className="border-b hover:bg-[#FAF7FF] transition">
+                    <td className="py-3 px-4">{index + 1}</td>
+                    <td className="py-3 px-4">{event.start_date}</td>
+                    <td className="py-3 px-4">{event.end_date}</td>
+                    <td className="py-3 px-4">{event.title}</td>
+                    <td className="py-3 px-4">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          event.is_published
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
                       >
-                        Tidak ada event
-                      </td>
-                    </tr>
-                  )}
-                  {filteredEvents.map((event) => (
-                    <tr
-                      key={event.id}
-                      className="border-b bg-gray-50 "
-                    >
-                      <td className="py-3 px-3">{event.title}</td>
-                      <td className="py-3 px-3 capitalize">{event.type}</td>
-                      <td className="py-3 px-3">{event.start_date}</td>
-                      <td className="py-3 px-3">{event.end_date}</td>
-                      <td className="py-3 px-3">
-                        {new Date(event.created_at).toLocaleDateString("id-ID")}
-                      </td>
-                      <td className="py-3 px-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            event.is_published
-                              ? "bg-green-100 text-green-700"
-                              : "bg-yellow-100 text-yellow-700"
-                          }`}
-                        >
-                          {event.is_published ? "Published" : "Draft"}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
-                              ⋮
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() =>
-                                router.visit(
-                                  route("admin.events.detail", event.id)
-                                )
-                              }
-                            >
-                              Detail
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => deleteEvent(event.id)}
-                              className="text-red-600"
-                            >
-                              Hapus
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </main>
-          {showModal && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-    <div className="bg-white rounded-lg shadow-lg w-[800px] max-h-[90vh] overflow-y-auto p-6 relative">
-      <button
-        onClick={() => setShowModal(false)}
-        className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
-      >
-        ✕
-      </button>
-      <h2 className="text-lg font-semibold mb-4">Tambah Event Baru</h2>
-      <ManageEventsModal onClose={() => setShowModal(false)} />
-    </div>
-  </div>
-)}
+                        {event.is_published ? "Aktif" : "Tidak Aktif"}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-none hover:bg-gray-100"
+                          >
+                            ⋮
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() =>
+                              router.visit(route("admin.events.detail", event.id))
+                            }
+                          >
+                            Detail
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => deleteEvent(event.id)}
+                            className="text-red-600"
+                          >
+                            Hapus
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        </div>
+          {/* Pagination */}
+          <div className="flex justify-end mt-4 text-sm text-gray-600">
+            <div className="flex items-center gap-2">
+              {[1, 2, 3, 4, 5, 6].map((page) => (
+                <button
+                  key={page}
+                  className={`px-3 py-1 border rounded ${
+                    page === 1
+                      ? "bg-[#FF8A3D] text-white border-[#FF8A3D]"
+                      : "hover:bg-gray-100"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+          </div>
+        </main>
       </div>
+
+      {/* Modal Tambah Event */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-[800px] max-h-[90vh] overflow-y-auto p-6 relative">
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-xl"
+            >
+              ✕
+            </button>
+            <h2 className="text-lg font-semibold mb-4">Tambah Event Baru</h2>
+            <ManageEventsModal onClose={() => setShowModal(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

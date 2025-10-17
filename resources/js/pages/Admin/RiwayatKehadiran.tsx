@@ -1,20 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
-import { ChevronLeft, ChevronRight, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
 
 interface RekapRow {
   nama: string;
   kelas: string;
-  keahlian?: string; // sekolah
-  eskul?: string;    // eskul
+  keahlian?: string;
   total: string;
   persentase: string;
 }
 
 const bulanList = [
-  "Januari","Februari","Maret","April","Mei","Juni",
-  "Juli","Agustus","September","Oktober","November","Desember"
+  "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+  "Juli", "Agustus", "September", "Oktober", "November", "Desember"
 ];
 
 const RiwayatKehadiran: React.FC = () => {
@@ -32,7 +31,7 @@ const RiwayatKehadiran: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://192.168.1.105:8000/api/admin/riwayat-kehadiran", {
+      const res = await axios.get("http://192.168.1.101:8000/api/admin/riwayat-kehadiran", {
         params: { filter, bulan, tahun, semester, type, eskul_id: eskulId },
       });
       setRekap(res.data.data || []);
@@ -43,11 +42,11 @@ const RiwayatKehadiran: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [filter, bulan, tahun, semester, type, eskulId]);
+  }, [filter, bulan, semester, type, eskulId, tahun]);
 
   useEffect(() => {
     if (type === "eskul") {
-      axios.get("http://192.168.1.105:8000/api/eskul/list").then((res) => {
+      axios.get("http://192.168.1.101:8000/api/eskul/list").then((res) => {
         setEskulList(res.data);
         if (res.data.length > 0 && !eskulId) {
           setEskulId(res.data[0].id);
@@ -56,157 +55,224 @@ const RiwayatKehadiran: React.FC = () => {
     }
   }, [type]);
 
- const filtered = rekap.filter((r) =>
-  (r.nama || "").toLowerCase().includes(search.toLowerCase())
-);
+  // Navigasi semester dengan rollover tahun
+  const handleSemesterNavigation = (direction: "prev" | "next") => {
+    if (direction === "prev") {
+      if (semester === 1) {
+        setSemester(2);
+        setTahun(tahun - 1);
+      } else {
+        setSemester(1);
+      }
+    } else {
+      if (semester === 2) {
+        setSemester(1);
+        setTahun(tahun + 1);
+      } else {
+        setSemester(2);
+      }
+    }
+  };
 
+  const filtered = rekap.filter((r) =>
+    (r.nama || "").toLowerCase().includes(search.toLowerCase())
+  );
   const paginated = filtered.slice((page - 1) * rowsPerPage, page * rowsPerPage);
   const totalPages = Math.ceil(filtered.length / rowsPerPage);
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Rekap Kehadiran Siswa</h1>
+    <div className="min-h-screen bg-[#F7F7F7] text-gray-900 flex">
+      {/* Sidebar */}
+                  <aside className="w-56 bg-white h-screen p-4 shadow">
+                    <nav className="space-y-2 text-sm">
+                      <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
+                      <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
+                      <div onClick={() => (window.location.href = '/admin/events')}
+                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
+                      <div
+                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
+                        onClick={() => (window.location.href = '/admin/eskul')}
+                      >
+                        ⚽ Ekstrakurikuler
+                      </div>
+                      <div 
+                        className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white"
+                        onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+                      >📈 Riwayat Kehadiran</div>
+                       <div 
+                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
+                        onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+                      >📈 Statistik Kehadiran</div>
+                      <div 
+                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
+                        onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+                      >📄 Laporan</div>
+                    </nav>
+                  </aside>
 
-      {/* Filter Section */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          {/* Toggle Bulanan / Semester */}
-          <div className="flex border rounded-lg overflow-hidden">
-            <button
-              className={`px-4 py-1 ${filter === "bulan" ? "bg-gray-200 font-semibold" : ""}`}
-              onClick={() => setFilter("bulan")}
-            >
-              Bulanan
-            </button>
-            <button
-              className={`px-4 py-1 ${filter === "semester" ? "bg-gray-200 font-semibold" : ""}`}
-              onClick={() => setFilter("semester")}
-            >
-              Semester
-            </button>
-          </div>
 
-          {/* Navigasi bulan */}
-          {filter === "bulan" && (
-            <div className="flex items-center gap-2">
-              <button onClick={() => setBulan(bulan === 1 ? 12 : bulan - 1)}>
-                <ChevronLeft />
+      {/* Main content */}
+      <main className="flex-1 p-8">
+        <h1 className="text-2xl font-bold mb-8">Riwayat Kehadiran</h1>
+
+        <div className="bg-white rounded-2xl shadow border border-[#C9A2FF] p-6">
+          <h2 className="text-lg font-semibold mb-6">Rekap Kehadiran Siswa</h2>
+
+          {/* Filter section */}
+          <div className="flex flex-wrap items-center justify-between mb-6">
+            {/* Tombol filter kiri */}
+            <div className="flex items-center gap-3">
+              <button className="flex items-center gap-2 bg-[#7B4EFF] text-white px-4 py-2 rounded-lg hover:bg-[#6939da]">
+                <Filter size={16} /> Filter
               </button>
-              <span>{bulanList[bulan - 1]} {tahun}</span>
-              <button onClick={() => setBulan(bulan === 12 ? 1 : bulan + 1)}>
-                <ChevronRight />
-              </button>
-            </div>
-          )}
 
-          {/* Semester */}
-          {filter === "semester" && (
-            <div className="flex items-center gap-2">
-              <select
-                value={semester}
-                onChange={(e) => setSemester(Number(e.target.value) as 1 | 2)}
-                className="border rounded p-1"
+              {/* Tombol Bulanan */}
+              <button
+                onClick={() => setFilter("bulan")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  filter === "bulan"
+                    ? "bg-[#7B4EFF] text-white"
+                    : "bg-white text-[#7B4EFF] border border-[#7B4EFF]"
+                }`}
               >
-                <option value="1">Semester 1 (Jul - Des)</option>
-                <option value="2">Semester 2 (Jan - Jun)</option>
+                Bulanan
+              </button>
+
+              {/* Tombol Semester */}
+              <button
+                onClick={() => setFilter("semester")}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  filter === "semester"
+                    ? "bg-[#7B4EFF] text-white"
+                    : "bg-white text-[#7B4EFF] border border-[#7B4EFF]"
+                }`}
+              >
+                Semester
+              </button>
+            </div>
+
+            {/* Dropdown Rekapan + Search */}
+            <div className="flex items-center gap-3">
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as "sekolah" | "eskul")}
+                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C9A2FF]"
+              >
+                <option value="sekolah">Rekapan Sekolah</option>
+                <option value="eskul">Rekapan Eskul</option>
               </select>
-              <span>{tahun}</span>
+
+              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
+                <Search size={16} className="text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Cari siswa"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="ml-2 outline-none text-sm w-40"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Navigasi Bulanan / Semester */}
+          {filter === "bulan" ? (
+            <div className="flex items-center gap-3 mb-6 text-gray-700">
+              <button
+                onClick={() => setBulan(bulan === 1 ? 12 : bulan - 1)}
+                className="hover:text-[#7B4EFF]"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="font-medium text-base">
+                {bulanList[bulan - 1]} {tahun}
+              </span>
+              <button
+                onClick={() => {
+                  if (bulan === 12) {
+                    setBulan(1);
+                    setTahun(tahun + 1);
+                  } else setBulan(bulan + 1);
+                }}
+                className="hover:text-[#7B4EFF]"
+              >
+                <ChevronRight size={18} />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 mb-6 text-gray-700">
+              <button
+                onClick={() => handleSemesterNavigation("prev")}
+                className="hover:text-[#7B4EFF]"
+              >
+                <ChevronLeft size={18} />
+              </button>
+              <span className="font-medium text-base">
+                Semester {semester} {tahun}
+              </span>
+              <button
+                onClick={() => handleSemesterNavigation("next")}
+                className="hover:text-[#7B4EFF]"
+              >
+                <ChevronRight size={18} />
+              </button>
             </div>
           )}
 
-          
-        </div>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b bg-gray-50">
+                  <th className="py-2">Nama Siswa</th>
+                  <th className="py-2">Kelas</th>
+                  <th className="py-2">Keahlian</th>
+                  <th className="py-2">Total</th>
+                  <th className="py-2">Persentase</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.length > 0 ? (
+                  paginated.map((row, idx) => (
+                    <tr key={idx} className="border-b hover:bg-gray-50">
+                      <td className="py-2">{row.nama ?? "-"}</td>
+                      <td className="py-2">{row.kelas ?? "-"}</td>
+                      <td className="py-2">{row.keahlian ?? "-"}</td>
+                      <td className="py-2">{row.total ?? "0/0"}</td>
+                      <td className="py-2">{row.persentase ?? "0%"}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center text-gray-500 py-4">
+                      Tidak ada data
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Search */}
-        <div className="flex items-center gap-3">
-            <div className="flex items-center border rounded px-2">
-            <Search className="w-4 h-4 text-gray-400" />
-            <input
-                placeholder="Cari siswa..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="ml-2 outline-none"
-            />
-            </div>
-
-        {/* Dropdown Rekapan */}
-          <select
-            value={type}
-            onChange={(e) => setType(e.target.value as "sekolah" | "eskul")}
-            className="border rounded p-1 "
-          >
-            <option value="sekolah">Rekapan Sekolah</option>
-            <option value="eskul">Rekapan Eskul</option>
-          </select>
-
-          {/* Pilih Eskul */}
-          {type === "eskul" && (
-            <select
-              value={eskulId ?? ""}
-              onChange={(e) => setEskulId(Number(e.target.value))}
-              className="border rounded p-1"
-            >
-              {eskulList.map((eskul) => (
-                <option key={eskul.id} value={eskul.id}>
-                  {eskul.nama}
-                </option>
-              ))}
-            </select>
-          )}
+          {/* Pagination */}
+          <div className="flex justify-end mt-4 gap-1">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
+              <button
+                key={num}
+                onClick={() => setPage(num)}
+                className={`px-3 py-1 rounded-full border text-sm ${
+                  page === num
+                    ? "bg-[#FF6B00] text-white border-[#FF6B00]"
+                    : "bg-white border-gray-300 hover:bg-gray-100"
+                }`}
+              >
+                {num}
+              </button>
+            ))}
           </div>
         </div>
-
-      
-          
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-         <thead>
-  <tr className="bg-gray-100">
-    <th className="p-2 border">Nama Siswa</th>
-    <th className="p-2 border">Kelas</th>
-    <th className="p-2 border">Keahlian</th>
-    <th className="p-2 border">Total</th>
-    <th className="p-2 border">Persentase</th>
-  </tr>
-</thead>
-<tbody>
-  {paginated.length > 0 ? (
-    paginated.map((row, idx) => (
-      <tr key={idx} className="border-b">
-        <td className="p-2">{row.nama ?? "-"}</td>
-        <td className="p-2">{row.kelas ?? "-"}</td>
-        <td className="p-2">{row.keahlian ?? "-"}</td>
-        <td className="p-2">{row.total ?? "0/0"}</td>
-        <td className="p-2">{row.persentase ?? "0%"}</td>
-      </tr>
-    ))
-  ) : (
-    <tr>
-      <td colSpan={5} className="p-4 text-center text-gray-500">
-        Tidak ada data
-      </td>
-    </tr>
-  )}
-</tbody>
-
-
-        </table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex justify-end items-center gap-2 mt-3">
-        {Array.from({ length: totalPages }, (_, i) => i + 1).map((num) => (
-          <button
-            key={num}
-            onClick={() => setPage(num)}
-            className={`px-3 py-1 rounded ${page === num ? "bg-gray-300 font-semibold" : "bg-gray-100"}`}
-          >
-            {num}
-          </button>
-        ))}
-      </div>
+      </main>
     </div>
   );
 };

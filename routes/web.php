@@ -76,7 +76,7 @@ Route::middleware(['auth:sanctum', 'verified'])->group(function () {
         ->name('admin.user.update');
 });
 
-// =================== Admin Event Management ===================
+// =================== pR Event Management ===================
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/events', [EventController::class, 'manageEvents'])->name('events.manage');
     Route::get('/events/create', fn () => Inertia::render('Admin/ManageEvents'))->name('events.create');

@@ -6,7 +6,7 @@ import { Student } from '@/types';
 import { Head } from '@inertiajs/react';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://192.168.1.105:8000';
+axios.defaults.baseURL = 'http://192.168.1.101:8000';
 
 const HomeSiswa = () => {
   /* ---------- STATE ---------- */
@@ -144,7 +144,7 @@ const HomeSiswa = () => {
       return (
         <button
           onClick={() => (window.location.href = '/murid/home/qr/checkIn')}
-          className="mt-10 w-[180px] h-[180px] rounded-full bg-[#34A853] text-white flex items-center justify-center 
+          className="mt-5 w-[160px] h-[160px] rounded-full bg-[#34A853] text-white flex items-center justify-center 
                      text-base font-normal leading-none 
                      shadow-[0px_0px_1px_20px_rgba(144,221,165,100),0px_0px_30px_35px_rgba(144,221,165,100)]"
         >
@@ -188,7 +188,7 @@ const HomeSiswa = () => {
 
   /* ---------- UI ---------- */
   return (
-    <div className="min-h-screen flex flex-col justify-between items-center pt-8 pb-24 px-4 bg-white">
+    <div className="min-h-screen flex flex-col justify-between items-center pt-4 pb-30 px-4 bg-white">
       <Head title="Home" />
       {/* Avatar & Info */}
       <div className="flex items-center gap-4 w-full">
@@ -206,7 +206,7 @@ const HomeSiswa = () => {
       </div>
 
       {/* Jam & Tanggal */}
-      <div className="text-center mt-6">
+      <div className="text-center">
         <h1 className="text-5xl font-bold text-gray-900">{currentTime}</h1>
         <p className="text-lg text-gray-700 capitalize">{today}</p>
       </div>
@@ -215,7 +215,7 @@ const HomeSiswa = () => {
       {renderButton()}
 
       {/* Ringkasan */}
-      <div className="w-full mt-6 text-center">
+      <div className="w-full mt-4 mb-10 text-center">
         <div className="flex justify-around">
           <div>
             <h4 className="text-gray-500">Status</h4>
