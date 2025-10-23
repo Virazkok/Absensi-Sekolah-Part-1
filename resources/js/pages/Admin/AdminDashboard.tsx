@@ -43,35 +43,27 @@ const getEventStatusColor = (status: string) => {
 export default function AdminDashboard() {
   const { props } = usePage<Props>();
 
-  // Top summary fallback
   const totalUsers = props.total_users ?? 0;
   const totalEvents = props.total_events ?? 0;
   const totalEskul = props.total_eskul ?? 0;
   const attendanceFromServer = props.attendance_percentage ?? { school: '0%', event: '0%', eskul: '0%' };
 
-  // Data lists from server
   const users: any[] = props.users ?? [];
   const events: any[] = props.events ?? [];
   const eskuls: any[] = props.eskuls ?? [];
   const statistik = props.statistik ?? { sekolah: 0, eskul: 0, event: 0 };
 
-  // =========================
-  // Rekap (interactive block)
-  // =========================
   const [rekapData, setRekapData] = useState<any[]>(props.rekap ?? []);
-  const [filterMode, setFilterMode] = useState<'bulan' | 'semester'>('bulan'); // bulan|semester for rekap UI
-  const [bulan, setBulan] = useState<number>(dayjs().month() + 1); // 1..12
+  const [filterMode, setFilterMode] = useState<'bulan' | 'semester'>('bulan');
+  const [bulan, setBulan] = useState<number>(dayjs().month() + 1);
   const [tahun, setTahun] = useState<number>(dayjs().year());
   const [semester, setSemester] = useState<1 | 2>(1);
   const [searchRekap, setSearchRekap] = useState<string>('');
   const [loadingRekap, setLoadingRekap] = useState<boolean>(false);
 
-  // Fetch rekap from API (like RiwayatKehadiran)
   const fetchRekap = async () => {
     setLoadingRekap(true);
     try {
-      // adapt params to your API naming (RiwayatController expects mode/week/month/year in earlier examples)
-      // Here we send 'filter','bulan','tahun','semester','type'
       const params: any = {
         filter: filterMode === 'bulan' ? 'bulan' : 'semester',
         bulan,
@@ -81,7 +73,6 @@ export default function AdminDashboard() {
       };
 
       const res = await axios.get('/api/admin/riwayat-kehadiran', { params });
-      // API shape may be { success, data, summary } or raw array
       const data = res.data?.data ?? res.data ?? [];
       setRekapData(Array.isArray(data) ? data : []);
     } catch (err) {
@@ -94,7 +85,6 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     fetchRekap();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterMode, bulan, tahun, semester]);
 
   const filteredRekap = useMemo(() => {
@@ -107,7 +97,6 @@ export default function AdminDashboard() {
     });
   }, [rekapData, searchRekap]);
 
-  // Month navigation helpers
   const prevMonth = () => {
     if (bulan === 1) {
       setBulan(12);
@@ -125,7 +114,6 @@ export default function AdminDashboard() {
     }
   };
 
-  // Semester nav
   const handleSemesterNav = (dir: 'prev' | 'next') => {
     if (dir === 'prev') {
       if (semester === 1) {
@@ -144,16 +132,10 @@ export default function AdminDashboard() {
     }
   };
 
-  // Top 3 to display
   const topThree = filteredRekap.slice(0, 3);
-
-  // Month label
   const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   const currentMonthLabel = `${monthNames[bulan - 1]} ${tahun}`;
 
-  // =========================
-  // Report (kehadiran table) — restore missing states used in JSX
-  // =========================
   const [reportFilterMode, setReportFilterMode] = useState<'mingguan' | 'bulanan' | 'semester'>('mingguan');
   const [searchReport, setSearchReport] = useState<string>('');
   const reportData: any[] = props.report ?? [];
@@ -167,227 +149,208 @@ export default function AdminDashboard() {
     });
   }, [reportData, searchReport]);
 
-  // =========================
-  // Render
-  // =========================
   return (
-    <div className="min-h-screen bg-gray-100 text-gray-800 ">
+    <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
       <Head title="Dashboard" />
-      <div className="max-w-full mr-5">
-        <div className="flex items-start gap-6">
-          {/* Sidebar */}
-          <aside className="w-56 bg-white h-screen p-4 shadow">
-            <nav className="space-y-2 text-sm">
-              <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-                className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white">🏠 Dashboard</div>
-              <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-                className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
-              <div onClick={() => (window.location.href = '/admin/events')}
-                className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
-              <div onClick={() => (window.location.href = '/admin/eskul')}
-                className="p-2 rounded hover:bg-gray-200 cursor-pointer">⚽ Ekstrakurikuler</div>
-              <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-                className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Riwayat Kehadiran</div>
-              <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-                className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Statistik Kehadiran</div>
-              <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-                className="p-2 rounded hover:bg-gray-200 cursor-pointer">📄 Laporan</div>
-            </nav>
-          </aside>
+      <div className="flex flex-1">
+        {/* Sidebar */}
+        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
+          <nav className="space-y-2 text-sm">
+            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white">🏠 Dashboard</div>
+            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/events')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/eskul')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">⚽ Ekstrakurikuler</div>
+            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Riwayat Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Statistik Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📄 Laporan</div>
+          </nav>
+        </aside>
 
-          {/* Main content */}
-          <main className="flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl font-bold">Admin</h1>
-              <div className="flex items-center gap-3">
-                <button className="p-2 rounded border bg-white">⚙️</button>
-                <button className="p-2 rounded border bg-white">🔓</button>
-                <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow">
-                  <img src={props.auth?.user?.avatar_url ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
-                  <div className="text-sm">{props.auth?.user?.name ?? 'Admin'}</div>
-                </div>
+        {/* Main content */}
+        <main className="flex-1 overflow-x-auto p-4">
+          {/* Header */}
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
+            <h1 className="text-2xl font-bold">Admin</h1>
+            <div className="flex items-center gap-3">
+              <button className="p-2 rounded border bg-white">⚙️</button>
+              <button className="p-2 rounded border bg-white">🔓</button>
+              <div className="flex items-center gap-2 bg-white p-2 rounded-xl shadow">
+                <img src={props.auth?.user?.avatar_url ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                <div className="text-sm">{props.auth?.user?.name ?? 'Admin'}</div>
               </div>
             </div>
+          </div>
 
-            {/* Top summary cards */}
-            <div className="grid grid-cols-4 gap-4 mb-6">
-              <SmallCard title="Total Siswa" value={totalUsers} />
-              <SmallCard title="Event Aktif" value={totalEvents} />
-              <SmallCard title="Ekstrakulikuler" value={totalEskul} />
-              <SmallCard title="Rata-rata Kehadiran" value={attendanceFromServer.school ?? '0%'} />
-            </div>
+          {/* Summary cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <SmallCard title="Total Siswa" value={totalUsers} />
+            <SmallCard title="Event Aktif" value={totalEvents} />
+            <SmallCard title="Ekstrakulikuler" value={totalEskul} />
+            <SmallCard title="Rata-rata Kehadiran" value={attendanceFromServer.school ?? '0%'} />
+          </div>
 
-            {/* three columns */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              {/* Users */}
-              <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="font-semibold">User</div>
-                  <button className="text-sm bg-[#6200EE] text-white px-3 py-1 rounded">tambah</button>
-                </div>
-                <div className="space-y-3 h-90 pr-2">
-                  {users.length === 0 && <div className="text-sm text-gray-500">Tidak ada data user</div>}
-                  {users.map((u: any) => (
-                    <div key={u.id} className="flex items-center justify-between border rounded-lg p-2 w-120">
-                      <div className="flex items-center gap-3">
-                        <img src={u.avatar_url ?? '/default-avatar.png'} className="w-10 h-10 rounded-full object-cover" />
-                        <div>
-                          <div className="font-medium">{u.name}</div>
-                          <div className="text-xs text-gray-500">{u.role ?? 'Siswa'}</div>
-                        </div>
-                      </div>
-                      <div className="text-gray-400">...</div>
-                    </div>
-                  ))}
-                </div>
+          {/* Users, Events, Eskul */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            {/* Users */}
+            <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
+              <div className="flex justify-between items-center mb-3">
+                <div className="font-semibold">User</div>
+                <button className="text-sm bg-[#6200EE] text-white px-3 py-1 rounded">tambah</button>
               </div>
-
-              {/* Events */}
-              <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="font-semibold">Event</div>
-                  <button className="text-sm bg-[#6200EE] text-white px-3 py-1 rounded">tambah</button>
-                </div>
-                <div className="space-y-3 h-90 pr-2">
-                  {events.length === 0 && <div className="text-sm text-gray-500">Tidak ada event</div>}
-                  {events.map((e: any) => (
-                    <div key={e.id} className="flex items-center justify-between border rounded-lg p-2 w-120">
+              <div className="space-y-3 max-h-90 overflow-y-auto pr-2">
+                {users.length === 0 && <div className="text-sm text-gray-500">Tidak ada data user</div>}
+                {users.map((u: any) => (
+                  <div key={u.id} className="flex items-center justify-between border rounded-lg p-2 w-full">
+                    <div className="flex items-center gap-3">
+                      <img src={u.avatar_url ?? '/default-avatar.png'} className="w-10 h-10 rounded-full object-cover" />
                       <div>
-                        <div className="font-medium">{e.title || e.nama || 'Event'}</div>
-                        <div className="text-xs text-gray-500">
-                          {e.start_date ? new Date(e.start_date).toLocaleDateString() : ''} - {e.end_date ? new Date(e.end_date).toLocaleDateString() : ''}
-                        </div>
-                      </div>
-                      <div className={`text-xs font-semibold px-3 py-1 rounded-full ${getEventStatusColor(e.status_event)}`}>
-                        {e.status_event ?? 'Tidak Aktif'}
+                        <div className="font-medium">{u.name}</div>
+                        <div className="text-xs text-gray-500">{u.role ?? 'Siswa'}</div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Eskul */}
-              <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
-                <div className="flex justify-between items-center mb-3">
-                  <div className="font-semibold">Ekstrakulikuler</div>
-                  <button className="text-sm bg-[#6200EE] text-white px-3 py-1 rounded">tambah</button>
-                </div>
-                <div className="space-y-3 h-90 pr-2">
-                  {eskuls.length === 0 && <div className="text-sm text-gray-500">Tidak ada eskul</div>}
-                  {eskuls.map((k: any) => (
-                    <div key={k.id} className="flex items-center justify-between border rounded-lg p-3 w-120">
-                      <div className="font-medium">{k.nama}</div>
-                      <div className="flex gap-4">
-                        <div className="text-xs text-white border rounded-lg bg-orange-600 p-1">
-                          {k.anggota_count ?? (k.anggota ?? 0)} Anggota
-                        </div>
-                        <div>...</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    <div className="text-gray-400">...</div>
+                  </div>
+                ))}
               </div>
             </div>
 
-            {/* Statistik + Rekap */}
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="font-semibold">Statistik Kehadiran</div>
-                  <div className="space-x-2">
-                    <button onClick={() => {}} className={`px-3 py-1 rounded bg-[#6200EE] text-white`}>Mingguan</button>
-                    <button onClick={() => {}} className={`px-3 py-1 rounded bg-gray-100`}>Bulanan</button>
-                    <button onClick={() => {}} className={`px-3 py-1 rounded bg-gray-100`}>Semester</button>
+            {/* Events */}
+            <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
+              <div className="flex justify-between items-center mb-3">
+                <div className="font-semibold">Event</div>
+                <button className="text-sm bg-[#6200EE] text-white px-3 py-1 rounded">tambah</button>
+              </div>
+              <div className="space-y-3 max-h-90 overflow-y-auto pr-2">
+                {events.length === 0 && <div className="text-sm text-gray-500">Tidak ada event</div>}
+                {events.map((e: any) => (
+                  <div key={e.id} className="flex items-center justify-between border rounded-lg p-2 w-full">
+                    <div>
+                      <div className="font-medium">{e.title || e.nama || 'Event'}</div>
+                      <div className="text-xs text-gray-500">
+                        {e.start_date ? new Date(e.start_date).toLocaleDateString() : ''} - {e.end_date ? new Date(e.end_date).toLocaleDateString() : ''}
+                      </div>
+                    </div>
+                    <div className={`text-xs font-semibold px-3 py-1 rounded-full ${getEventStatusColor(e.status_event)}`}>
+                      {e.status_event ?? 'Tidak Aktif'}
+                    </div>
                   </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Eskul */}
+            <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
+              <div className="flex justify-between items-center mb-3">
+                <div className="font-semibold">Ekstrakulikuler</div>
+                <button className="text-sm bg-[#6200EE] text-white px-3 py-1 rounded">tambah</button>
+              </div>
+              <div className="space-y-3 max-h-80 overflow-y-auto pr-2">
+                {eskuls.length === 0 && <div className="text-sm text-gray-500">Tidak ada eskul</div>}
+                {eskuls.map((k: any) => (
+                  <div key={k.id} className="flex items-center justify-between border rounded-lg p-3 w-full">
+                    <div className="font-medium">{k.nama}</div>
+                    <div className="flex gap-4">
+                      <div className="text-xs text-white border rounded-lg bg-orange-600 p-1">
+                        {k.anggota_count ?? (k.anggota ?? 0)} Anggota
+                      </div>
+                      <div>...</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Statistik + Rekap */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
+              <div className="flex items-center justify-between mb-3">
+                <div className="font-semibold">Statistik Kehadiran</div>
+                <div className="space-x-2">
+                  <button className="px-3 py-1 rounded bg-[#6200EE] text-white">Mingguan</button>
+                  <button className="px-3 py-1 rounded bg-gray-100">Bulanan</button>
+                  <button className="px-3 py-1 rounded bg-gray-100">Semester</button>
                 </div>
+              </div>
+              <div>
+                <ProgressLine label="Kehadiran sekolah" percent={Number(statistik.sekolah ?? statistik.school ?? 0)} />
+                <ProgressLine label="Kehadiran Ekstrakulikuler" percent={Number(statistik.eskul ?? statistik.ekskul ?? 0)} />
+                <ProgressLine label="Kehadiran Event" percent={Number(statistik.event ?? 0)} />
+              </div>
+            </div>
+
+            {/* Rekap Kehadiran */}
+            <div className="bg-white rounded-2xl shadow border border-[#C9A2FF] p-6">
+              <div className="flex flex-wrap justify-between items-center mb-4 gap-2">
                 <div>
-                  <ProgressLine label="Kehadiran sekolah" percent={Number(statistik.sekolah ?? statistik.school ?? 0)} />
-                  <ProgressLine label="Kehadiran Ekstrakulikuler" percent={Number(statistik.eskul ?? statistik.ekskul ?? 0)} />
-                  <ProgressLine label="Kehadiran Event" percent={Number(statistik.event ?? 0)} />
+                  <h2 className="text-lg font-semibold">Rekap Kehadiran Siswa</h2>
+                  <div className="text-xs text-gray-500">{filterMode === 'bulan' ? currentMonthLabel : `Semester ${semester} ${tahun}`}</div>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button className="flex items-center gap-1 bg-[#7B4EFF] text-white px-3 py-1.5 rounded-lg text-sm">⚙️ Filter</button>
+                  <button
+                    onClick={() => setFilterMode('bulan')}
+                    className={`px-3 py-1.5 rounded-lg text-sm ${filterMode === 'bulan' ? 'bg-[#7B4EFF] text-white' : 'border border-[#7B4EFF] text-[#7B4EFF]'}`}
+                  >
+                    Bulanan
+                  </button>
+                  <button
+                    onClick={() => setFilterMode('semester')}
+                    className={`px-3 py-1.5 rounded-lg text-sm ${filterMode === 'semester' ? 'bg-[#7B4EFF] text-white' : 'border border-[#7B4EFF] text-[#7B4EFF]'}`}
+                  >
+                    Semester
+                  </button>
+                  <input
+                    type="text"
+                    placeholder="Cari"
+                    className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm"
+                    value={searchRekap}
+                    onChange={(e) => setSearchRekap(e.target.value)}
+                  />
                 </div>
               </div>
 
-              {/* Rekap Kehadiran (interactive) */}
-              <div className="bg-white rounded-2xl shadow border border-[#C9A2FF] p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <div>
-                    <h2 className="text-lg font-semibold">Rekap Kehadiran Siswa</h2>
-                    <div className="text-xs text-gray-500">{filterMode === 'bulan' ? currentMonthLabel : `Semester ${semester} ${tahun}`}</div>
+              <div className="flex items-center justify-between mb-4">
+                {filterMode === 'bulan' ? (
+                  <div className="flex items-center gap-3">
+                    <button onClick={prevMonth} className="px-2 py-1 rounded border">◀</button>
+                    <div className="text-sm font-medium">{currentMonthLabel}</div>
+                    <button onClick={nextMonth} className="px-2 py-1 rounded border">▶</button>
                   </div>
-
-                  <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-1 bg-[#7B4EFF] text-white px-3 py-1.5 rounded-lg text-sm">
-                      ⚙️ Filter
-                    </button>
-
-                    <button
-                      onClick={() => setFilterMode('bulan')}
-                      className={`px-3 py-1.5 rounded-lg text-sm ${filterMode === 'bulan' ? 'bg-[#7B4EFF] text-white' : 'border border-[#7B4EFF] text-[#7B4EFF]'}`}
-                    >
-                      Bulanan
-                    </button>
-
-                    <button
-                      onClick={() => setFilterMode('semester')}
-                      className={`px-3 py-1.5 rounded-lg text-sm ${filterMode === 'semester' ? 'bg-[#7B4EFF] text-white' : 'border border-[#7B4EFF] text-[#7B4EFF]'}`}
-                    >
-                      Semester
-                    </button>
-
-                    <input
-                      type="text"
-                      placeholder="Cari"
-                      className="border border-gray-300 rounded-lg px-3 py-1.5 text-sm"
-                      value={searchRekap}
-                      onChange={(e) => setSearchRekap(e.target.value)}
-                    />
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <button onClick={() => handleSemesterNav('prev')} className="px-2 py-1 rounded border">◀</button>
+                    <div className="text-sm font-medium">Semester {semester} — {tahun}</div>
+                    <button onClick={() => handleSemesterNav('next')} className="px-2 py-1 rounded border">▶</button>
                   </div>
-                </div>
+                )}
+                <div className="text-xs text-gray-500">{loadingRekap ? 'Memuat...' : `${filteredRekap.length} siswa`}</div>
+              </div>
 
-                {/* Navigation */}
-                <div className="flex items-center justify-between mb-4">
-                  {filterMode === 'bulan' ? (
-                    <div className="flex items-center gap-3">
-                      <button onClick={prevMonth} className="px-2 py-1 rounded border">◀</button>
-                      <div className="text-sm font-medium">{currentMonthLabel}</div>
-                      <button onClick={nextMonth} className="px-2 py-1 rounded border">▶</button>
+              <div className="space-y-2">
+                {filteredRekap.length === 0 && (
+                  <div className="text-sm text-gray-500 text-center">Tidak ada data</div>
+                )}
+                {topThree.map((r: any, i: number) => (
+                  <div key={i} className="flex justify-between items-center border rounded-xl p-3 bg-gray-50">
+                    <div>
+                      <div className="font-medium">{r.nama || r.name}</div>
+                      <div className="text-xs text-gray-500">{r.kelas}</div>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <button onClick={() => handleSemesterNav('prev')} className="px-2 py-1 rounded border">◀</button>
-                      <div className="text-sm font-medium">Semester {semester} — {tahun}</div>
-                      <button onClick={() => handleSemesterNav('next')} className="px-2 py-1 rounded border">▶</button>
-                    </div>
-                  )}
-
-                  <div className="text-xs text-gray-500">{loadingRekap ? 'Memuat...' : `${filteredRekap.length} hasil`}</div>
-                </div>
-
-                {/* List (top 3) */}
-                <div className="space-y-3">
-                  {topThree.length === 0 && !loadingRekap && <div className="text-sm text-gray-500">Tidak ada data rekap</div>}
-
-                  {topThree.map((r: any) => (
-                    <div key={r.id ?? r.murid_id ?? `${r.nama ?? r.name}-${Math.random()}`} className="flex justify-between items-center border rounded-xl p-3 hover:bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <img src={r.avatar_url ?? r.avatar ?? '/images/avatar-placeholder.png'} className="w-10 h-10 rounded-full object-cover" />
-                        <div>
-                          <div className="font-medium">{r.nama ?? r.name ?? '-'}</div>
-                          <div className="text-xs text-gray-500">{ (r.kelas && (typeof r.kelas === 'string' ? r.kelas : (r.kelas?.name ?? r.kelas_nama ?? '-'))) }</div>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end">
-                        <div className="text-xs text-gray-400">{r.total ?? r.total_hadir ?? '-'}</div>
-                        <div className="text-lg font-bold text-[#7B4EFF]">{(r.persentase ?? r.persen ?? r.persentase_s ?? '0')}%</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    <div className="font-semibold text-[#7B4EFF]">{r.persentase ?? r.percentage ?? 0}%</div>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Report Kehadiran Table (uses restored reportFilterMode/searchReport/filteredReport) */}
+          </div>
+  {/* Report Kehadiran Table (uses restored reportFilterMode/searchReport/filteredReport) */}
             <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
               <div className="flex items-center justify-between mb-3">
                 <div className="font-semibold">Report Kehadiran</div>
@@ -434,7 +397,7 @@ export default function AdminDashboard() {
                         <td className="py-3 pr-4">{r.hadir_ekskul ?? r.jumlah_hadir_ekskul ?? 0}</td>
                         <td className="py-3 pr-4">{r.hadir_event ?? r.jumlah_hadir_event ?? 0}</td>
                         <td className="py-3 pr-4">{r.total ?? r.jumlah_total ?? 0}</td>
-                        <td className="py-3 pr-4">{r.keterangan ?? 'Baikklah'}</td>
+                        <td className="py-3 pr-4">{r.keterangan ?? 'Baik'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -445,6 +408,5 @@ export default function AdminDashboard() {
           </main>
         </div>
       </div>
-    </div>
   );
 }
