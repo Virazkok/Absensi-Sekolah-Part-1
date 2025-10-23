@@ -31,7 +31,7 @@ const RiwayatKehadiran: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get("http://192.168.1.101:8000/api/admin/riwayat-kehadiran", {
+      const res = await axios.get("http://127.0.0.1:8000/api/admin/riwayat-kehadiran", {
         params: { filter, bulan, tahun, semester, type, eskul_id: eskulId },
       });
       setRekap(res.data.data || []);
@@ -46,7 +46,7 @@ const RiwayatKehadiran: React.FC = () => {
 
   useEffect(() => {
     if (type === "eskul") {
-      axios.get("http://192.168.1.101:8000/api/eskul/list").then((res) => {
+      axios.get("http://127.0.0.1:8000/api/eskul/list").then((res) => {
         setEskulList(res.data);
         if (res.data.length > 0 && !eskulId) {
           setEskulId(res.data[0].id);

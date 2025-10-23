@@ -192,30 +192,7 @@ export default function CreateUserModal() {
             <InputError message={errors.keahlian} />
           </div>
 
-          {/* Eskul 1–3 */}
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="grid gap-2">
-              <Label>Eskul {i} (Opsional)</Label>
-              <Select
-                value={String(data[`eskul_siswa${i}_id` as keyof RegisterForm] || "")}
-                onValueChange={(v) =>
-                  setData(`eskul_siswa${i}_id` as keyof RegisterForm, v)
-                }
-                disabled={isLoading}
-              >
-                <SelectTrigger className="text-gray-900">
-                  <SelectValue placeholder="Pilih eskul" className="text-gray-900" />
-                </SelectTrigger>
-                <SelectContent>
-                  {eskulOptions.map((eskul) => (
-                    <SelectItem key={eskul.id} value={String(eskul.id)}>
-                      {eskul.nama}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ))}
+         
 
           {/* Password */}
           <div className="grid gap-2">

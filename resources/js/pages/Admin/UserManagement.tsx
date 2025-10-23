@@ -107,7 +107,6 @@ export default function UserManagement() {
               <thead className="bg-[#F4EAFF]">
                 <tr className="text-left text-gray-700 font-medium">
                   <th className="py-3 px-4">Nama</th>
-                  <th className="py-3 px-4">Username</th>
                   <th className="py-3 px-4">Roles</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Date Added</th>
@@ -129,12 +128,12 @@ export default function UserManagement() {
                     className="border-b hover:bg-[#FAF7FF] transition"
                   >
                     <td className="py-3 px-4">{u.name}</td>
-                    <td className="py-3 px-4">{u.username || "-"}</td>
+                    
                     <td className="py-3 px-4 capitalize">{u.role}</td>
                     <td className="py-3 px-4">
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          u.status === "aktif"
+                          u.status === "active"
                             ? "bg-green-100 text-green-700"
                             : "bg-red-100 text-red-700"
                         }`}

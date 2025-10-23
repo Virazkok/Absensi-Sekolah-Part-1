@@ -6,7 +6,7 @@ import axios from 'axios';
 import { PageProps, Student } from '@/types';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://192.168.1.101:8000';
+axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
 const QRCheckInOut = ({ mode = 'in' }) => {
     const [user, setUser] = useState<Student | null>(null);

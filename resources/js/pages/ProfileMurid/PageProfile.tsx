@@ -44,6 +44,10 @@ const PageProfile: React.FC = () => {
 
   if (!user || !stats) return <p className="p-4">Loading...</p>;
 
+  const handleLogout = () => {
+  router.post('/logout');
+};
+
   return (
     <>
       <div className="min-h-screen bg-white ">
@@ -65,6 +69,12 @@ const PageProfile: React.FC = () => {
               <span>Ubah Profil</span>
             </button>
           </div>
+          <button
+            onClick={handleLogout}
+            className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded"
+          >
+            Logout
+          </button>
         </div>
 
         {/* Filter Section */}

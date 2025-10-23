@@ -19,8 +19,9 @@ interface EventDetail {
   type: string;
   start_date: string;
   end_date: string;
-  image?: string | null;
   location?: string | null;
+  image?: string | null;
+  image_url?: string | null;
 }
 
 interface Registration {
@@ -79,10 +80,7 @@ export default function AdminEventDetail() {
     formData.append("type", data.type);
     formData.append("start_date", data.start_date);
     formData.append("end_date", data.end_date);
-
-    if (data.image) {
-      formData.append("image", data.image);
-    }
+    if (data.image) formData.append("image", data.image);
 
     router.post(route("admin.events.update", event.id), formData, {
       forceFormData: true,
@@ -93,7 +91,6 @@ export default function AdminEventDetail() {
   const filteredRegs = registrations.filter((r) =>
     r.user.name.toLowerCase().includes(query.toLowerCase())
   );
-
   const filteredAtts = attendances.filter((a) =>
     a.user.name.toLowerCase().includes(query.toLowerCase())
   );
@@ -115,26 +112,26 @@ export default function AdminEventDetail() {
     }
   };
 
+  // Tentukan sumber gambar event
+  const eventImageSrc =
+    event.image_url ||
+    (event.image ? `/storage/${event.image}` : "");
+
   return (
     <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl">Detail Event</h2>}>
       <Head title={`Detail Event - ${event.title}`} />
 
       <div className="py-8 max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6 text-gray-900">
-        {/* Card with image and two-column detail */}
+        {/* ======= Event Card ======= */}
         <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
-          {event.image ? (
-            <div className="w-full aspect-[16/9] overflow-hidden">
-              <img
-                src={`/storage/${event.image}`}
-                alt={event.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="w-full h-64 bg-gray-100 flex items-center justify-center text-gray-400">
-              No Image
-            </div>
-          )}
+          <div className="w-full aspect-[16/9] overflow-hidden bg-gray-100">
+            <img
+  src={event.image_url}
+  alt={event.title}
+  className="w-full h-48 object-cover rounded-xl"
+/>
+
+          </div>
 
           <div className="p-6">
             <div className="grid grid-cols-2 gap-6">
@@ -166,23 +163,33 @@ export default function AdminEventDetail() {
           </div>
         </div>
 
-        {/* Tabs + Search */}
+        {/* ======= Tabs ======= */}
         <div className="flex items-center justify-between">
           <div className="flex gap-2">
-            <Button variant={activeTab === "registrations" ? "default" : "ghost"} onClick={() => setActiveTab("registrations")}>
+            <Button
+              variant={activeTab === "registrations" ? "default" : "ghost"}
+              onClick={() => setActiveTab("registrations")}
+            >
               Pendaftaran
             </Button>
-            <Button variant={activeTab === "attendances" ? "default" : "ghost"} onClick={() => setActiveTab("attendances")}>
+            <Button
+              variant={activeTab === "attendances" ? "default" : "ghost"}
+              onClick={() => setActiveTab("attendances")}
+            >
               Kehadiran
             </Button>
           </div>
 
           <div className="w-72">
-            <Input placeholder="cari nama peserta" value={query} onChange={(e) => setQuery(e.target.value)} />
+            <Input
+              placeholder="Cari nama peserta"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
           </div>
         </div>
 
-        {/* Table */}
+        {/* ======= Table ======= */}
         <div className="bg-white border rounded-lg shadow-sm p-4">
           {activeTab === "registrations" ? (
             <table className="min-w-full text-sm">
@@ -229,19 +236,9 @@ export default function AdminEventDetail() {
               </tbody>
             </table>
           )}
-
-          {/* Pagination placeholder */}
-          <div className="mt-4 flex justify-end">
-            <div className="inline-flex items-center gap-2 bg-gray-50 border rounded-full px-3 py-1 text-sm">
-              <span className="text-gray-500">1</span>
-              <span className="text-gray-400">2</span>
-              <span className="text-gray-400">3</span>
-              <span className="text-gray-400">…</span>
-            </div>
-          </div>
         </div>
 
-        {/* Modal Edit Event */}
+        {/* ======= Modal Edit Event ======= */}
         <Dialog open={showModal} onOpenChange={setShowModal}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
@@ -261,9 +258,14 @@ export default function AdminEventDetail() {
                 <div className="mt-2">
                   {previewUrl ? (
                     <img src={previewUrl} className="w-48 h-28 object-cover rounded" alt="preview" />
-                  ) : event.image ? (
-                    <img src={`/storage/${event.image}`} className="w-48 h-28 object-cover rounded" alt="event" />
-                  ) : null}
+                  ) : (
+                    <img
+                      src={event.image ? `/storage/${event.image}` : "/images/default-event.png"}
+                      className="w-48 h-28 object-cover rounded"
+                      alt="event"
+                      onError={(e) => (e.currentTarget.src = "/images/default-event.png")}
+                    />
+                  )}
                 </div>
               </div>
 

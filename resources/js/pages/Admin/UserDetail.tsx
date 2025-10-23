@@ -149,11 +149,6 @@ export default function DetailUser() {
                 </div>
 
                 <div className="flex justify-between">
-                  <div className="text-gray-600">Username</div>
-                  <div className="font-medium">{user.username}</div>
-                </div>
-
-                <div className="flex justify-between">
                   <div className="text-gray-600">Password</div>
                   <div className="font-medium">********</div>
                 </div>

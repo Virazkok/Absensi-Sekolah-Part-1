@@ -6,7 +6,7 @@ import { Student } from '@/types';
 import { Head } from '@inertiajs/react';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://192.168.1.101:8000';
+axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
 const HomeSiswa = () => {
   /* ---------- STATE ---------- */
@@ -203,6 +203,7 @@ const HomeSiswa = () => {
           <h2 className="text-lg font-semibold text-gray-600">{user?.name || 'Nama Siswa'}</h2>
           <p className="text-gray-600">{user?.kelas?.name || 'Kelas'}</p>
         </div>
+        
       </div>
 
       {/* Jam & Tanggal */}

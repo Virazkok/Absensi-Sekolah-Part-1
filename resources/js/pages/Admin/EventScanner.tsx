@@ -25,7 +25,7 @@ export default function EventScanner() {
     const getCookie = (name: string) =>
       document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'))?.[2] || '';
 
-    const res = await fetch('http://192.168.1.101:8000/api/events/scan-qr', {
+    const res = await fetch('http://127.0.0.1:8000/api/events/scan-qr', {
       method: 'POST',
       credentials: 'include',
       headers: {

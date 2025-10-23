@@ -31,7 +31,16 @@ public function index(Request $request)
               ->get();
 
     return inertia('EventMurid/MuridEvent', [
-        'events' => $events,
+        'events' => $events->map(fn($e) => [
+            'id' => $e->id,
+            'title' => $e->title,
+            'description' => $e->description,
+            'type' => $e->type,
+            'start_date' => $e->start_date,
+            'end_date' => $e->end_date,
+            'registrations' => $e->registrations,
+            'image' => $e->image, // ✅ kirim base64 langsung
+        ]),
         'auth'   => [
             'user' => [
                 'id'    => $user->id,
@@ -46,6 +55,7 @@ public function index(Request $request)
         ],
     ]);
 }
+
 
 
     public function store(Request $request)
@@ -171,7 +181,8 @@ public function storeEvent(Request $request)
     ]);
 
     if ($request->hasFile('image')) {
-        $validated['image'] = $request->file('image')->store('events', 'public');
+        $file = $request->file('image');
+        $validated['image'] = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file));
     }
 
     Event::create($validated);
@@ -193,22 +204,32 @@ public function togglePublish(Request $request, $eventId)
 // ================== ADMIN EVENT DETAIL ==================
 public function adminDetailEvent($id)
 {
-    $event = Event::with(['registrations.user.kelas', 'attendances.user.kelas'])->findOrFail($id);
+    $event = Event::with(['registrations.user.kelas', 'attendances.user.kelas'])
+        ->findOrFail($id);
 
     return Inertia::render('Admin/AdminEventDetail', [
-        'event' => $event,
+        'event' => [
+            'id' => $event->id,
+            'title' => $event->title,
+            'description' => $event->description,
+            'type' => $event->type,
+            'start_date' => $event->start_date,
+            'end_date' => $event->end_date,
+            'location' => $event->location,
+            'is_published' => $event->is_published,
+            'image_url' => $event->image_url, // ✅ akses dari accessor model
+        ],
         'registrations' => $event->registrations,
         'attendances' => $event->attendances,
         'auth' => [
             'user' => auth()->user(),
-        ]
+        ],
     ]);
 }
 
+
 public function updateEvent(Request $request, $id)
 {
-    \Log::info('Update event request:', $request->all());
-
     $validated = $request->validate([
         'title'       => 'required|string|max:255',
         'description' => 'required|string',
@@ -225,10 +246,8 @@ public function updateEvent(Request $request, $id)
     $event = Event::findOrFail($id);
 
     if ($request->hasFile('image')) {
-        if ($event->image && Storage::disk('public')->exists($event->image)) {
-            Storage::disk('public')->delete($event->image);
-        }
-        $validated['image'] = $request->file('image')->store('events', 'public');
+        $file = $request->file('image');
+        $validated['image'] = 'data:' . $file->getMimeType() . ';base64,' . base64_encode(file_get_contents($file));
     } else {
         unset($validated['image']);
     }

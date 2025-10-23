@@ -66,12 +66,13 @@ export default function EventIndex() {
             >
               {/* Gambar event dengan jarak dari sisi */}
               <div className="w-full aspect-video">
-               <img
-  src={event.image ? `/storage/${event.image}` : `/default-avatar.png`}
+              <img
+  src={event.image || '/default-avatar.png'}
   alt={event.title}
   className="w-full h-full object-cover rounded-t-[20px]"
-  onError={(e: any) => (e.target.style.display = 'none')}
+  onError={(e: any) => (e.target.src = '/default-avatar.png')}
 />
+
 
               </div>
 

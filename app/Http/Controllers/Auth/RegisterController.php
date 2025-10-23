@@ -22,9 +22,7 @@ class RegisterController extends Controller
         'kelas_id'  => 'required|integer|exists:kelas,id',
         'nis'       => 'required|string|unique:murid,nis',
         'keahlian'  => 'nullable|string|max:255',
-        'eskul_siswa1_id' => 'nullable|integer|exists:eskul,id',
-        'eskul_siswa2_id' => 'nullable|integer|exists:eskul,id',
-        'eskul_siswa3_id' => 'nullable|integer|exists:eskul,id',
+        
     ]);
 
     // 1️⃣ Buat murid dulu

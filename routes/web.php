@@ -64,6 +64,8 @@ Route::get('/coba', function () {
 
 Route::middleware(['auth:sanctum', 'verified'])->group(function () {
     Route::get('/Admin/Dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/Admin/Dashboard/rekap/{mode}', [DashboardController::class, 'rekap']);
+    Route::get('/Admin/Dashboard/report/{mode}', [DashboardController::class, 'report']);
     Route::get('/Admin/dashboard/export/{type}', [DashboardController::class, 'export'])->name('admin.dashboard.export');
     Route::get('/Admin/UserManagement', [UserManagementController::class, 'index'])->name('admin.user.management');
       Route::get('/Admin/UserDetail/{id}', [UserManagementController::class, 'detail'])
@@ -93,6 +95,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified'])->group(
 Route::prefix('admin')->name('admin.')->middleware(['auth','verified'])->group(function () {
     Route::get('/eskul', [EskulControllerAdmin::class, 'index'])->name('eskul.index');
     Route::post('/eskul', [EskulControllerAdmin::class, 'store'])->name('eskul.store');
+    Route::post('/eskul/add-members', [EskulControllerAdmin::class, 'addMembers'])->name('eskul.addMembers');
+    Route::delete('/admin/eskul/{eskul}/remove-member', [EskulControllerAdmin::class, 'removeMember'])
+    ->name('eskul.removeMember');
     Route::get('/eskul/create', fn () => Inertia::render('Admin/AdminEskulCreate'))->name('eskul.create');
     Route::get('/eskul/{eskul}', [EskulControllerAdmin::class, 'show'])->name('eskul.show');
     Route::patch('/eskul/{eskul}', [EskulControllerAdmin::class, 'update'])->name('eskul.update');
