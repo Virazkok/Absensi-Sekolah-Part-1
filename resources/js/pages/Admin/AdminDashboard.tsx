@@ -434,7 +434,7 @@ export default function AdminDashboard() {
                         <td className="py-3 pr-4">{r.hadir_ekskul ?? r.jumlah_hadir_ekskul ?? 0}</td>
                         <td className="py-3 pr-4">{r.hadir_event ?? r.jumlah_hadir_event ?? 0}</td>
                         <td className="py-3 pr-4">{r.total ?? r.jumlah_total ?? 0}</td>
-                        <td className="py-3 pr-4">{r.keterangan ?? 'Baikk'}</td>
+                        <td className="py-3 pr-4">{r.keterangan ?? 'Baikklah'}</td>
                       </tr>
                     ))}
                   </tbody>
