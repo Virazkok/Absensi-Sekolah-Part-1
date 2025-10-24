@@ -22,6 +22,7 @@ class User extends Authenticatable
     'role',
     'status',
     'avatar',
+    'avatar_path',
     'eskul_siswa1_id',
     'eskul_siswa2_id',
     'eskul_siswa3_id',

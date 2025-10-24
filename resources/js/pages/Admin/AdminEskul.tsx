@@ -177,7 +177,7 @@ export default function AdminEskul() {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <h2 className="text-[18px] font-semibold text-gray-600 mt-3 ml-2">{user?.name || 'Admin'}</h2>
+              <h2 className="text-[18px] font-semibold text-gray-600 mt-3 ml-2">{user?.name || 'Adminn'}</h2>
               </div>
               <div className="flex mt-4 ">
                 <div className="">🦾</div>

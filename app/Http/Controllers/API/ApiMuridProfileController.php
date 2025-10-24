@@ -40,10 +40,18 @@
 
             // Avatar simpan ke database (base64)
             if ($request->hasFile('avatar')) {
-                $image = $request->file('avatar');
-                $base64 = 'data:image/' . $image->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($image));
-                $user->avatar = $base64;
-            }
+    $image = $request->file('avatar');
+
+    // Simpan file di storage/public
+    $filePath = $image->store('avatars', 'public');
+
+    // Simpan base64 ke database
+    $base64 = 'data:image/' . $image->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($image));
+
+    $user->avatar_path = $filePath;
+    $user->avatar = $base64;
+}
+
 
             $user->save();
 
