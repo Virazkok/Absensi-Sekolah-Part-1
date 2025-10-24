@@ -152,4 +152,7 @@ $rekap = Kehadiran::select('murid_id')
             
         ]);
     }
+    public function index1() {
+        return inertia('dashboard');
+    }
 }

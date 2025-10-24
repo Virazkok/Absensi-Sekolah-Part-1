@@ -89,17 +89,7 @@ const HomeSiswa = () => {
     // return () => clearInterval(interval);
   }, [user]);
 
-  /* ---------- AUTO UPDATE STATUS "-" ---------- */
-  useEffect(() => {
-    const hour = time.getHours();
-    const minute = time.getMinutes();
-    const totalMinutes = hour * 60 + minute;
-    const endCheckOut = 17 * 60;
 
-    if (isCheckedIn && !isCheckedOut && totalMinutes >= endCheckOut) {
-      setCheckInStatus('-');
-    }
-  }, [time, isCheckedIn, isCheckedOut]);
 
   /* ---------- FORMAT JAM & TGL ---------- */
   const today = time.toLocaleDateString('id-ID', {
@@ -119,9 +109,13 @@ const HomeSiswa = () => {
     const totalMinutes = hour * 60 + minute;
 
     const startCheckIn = 9 * 60 + 0; 
-    const endCheckIn = 21 * 60 + 4;
-    const startCheckOut = 9 * 60 + 0;
-    const endCheckOut = 21 * 60 + 4;
+    const endCheckIn = 20 * 60 + 4;
+    const startCheckOut = 21 * 60 + 0;
+    const endCheckOut = 22 * 60 + 4;
+
+    if (isCheckedIn && !isCheckedOut && totalMinutes >= endCheckOut) {
+      setCheckInStatus('-');
+    }
 
     
 
