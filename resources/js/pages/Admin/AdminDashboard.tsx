@@ -250,7 +250,6 @@ console.log("Rekap dari backend:", props.rekap);
 
               </div>
             </div>
-          </div>
 
             {/* Events */}
             <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
@@ -403,7 +402,7 @@ console.log("Rekap dari backend:", props.rekap);
               </div>
             </div>
           </div>
-            {/* Report Kehadiran Table (uses restored reportFilterMode/searchReport/filteredReport) */}
+  {/* Report Kehadiran Table (uses restored reportFilterMode/searchReport/filteredReport) */}
             <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
               <div className="flex items-center justify-between mb-3">
                 <div className="font-semibold">Report Kehadiran</div>
