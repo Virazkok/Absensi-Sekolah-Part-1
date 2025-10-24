@@ -1,7 +1,10 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Head, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
+import isoWeek from "dayjs/plugin/isoWeek";
+dayjs.extend(isoWeek);
+
 
 type Props = any;
 
@@ -54,6 +57,7 @@ export default function AdminDashboard() {
   const eskuls: any[] = props.eskuls ?? [];
   const statistik = props.statistik ?? { sekolah: 0, eskul: 0, event: 0 };
 
+
   const [rekapData, setRekapData] = useState<any[]>(props.rekap ?? []);
   const [filterMode, setFilterMode] = useState<'bulan' | 'semester'>('bulan');
   const [bulan, setBulan] = useState<number>(dayjs().month() + 1);
@@ -69,6 +73,9 @@ useEffect(() => {
     .then(res => setStatistikData(res.data))
     .catch(err => console.error('Gagal ambil statistik:', err));
 }, [range]);
+
+
+
 
 
   const fetchRekap = async () => {
@@ -150,9 +157,50 @@ useEffect(() => {
   const monthNames = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
   const currentMonthLabel = `${monthNames[bulan - 1]} ${tahun}`;
 
-  const [reportFilterMode, setReportFilterMode] = useState<'mingguan' | 'bulanan' | 'semester'>('mingguan');
-  const [searchReport, setSearchReport] = useState<string>('');
-  const reportData: any[] = props.report ?? [];
+  // pindahkan ke atas (di sekitar line 60-an)
+const [reportFilterMode, setReportFilterMode] = useState<"mingguan" | "bulanan" | "semester">("bulanan");
+const [reportData, setReportData] = useState<any[]>([]);
+const [searchReport, setSearchReport] = useState("");
+
+const [currentStart, setCurrentStart] = useState(
+  dayjs().isoWeekday(1).startOf("day") // Senin minggu ini
+);
+const [currentEnd, setCurrentEnd] = useState(
+  dayjs().isoWeekday(5).endOf("day")   // Jumat minggu ini
+);
+
+useEffect(() => {
+  let start: dayjs.Dayjs;
+  let end: dayjs.Dayjs;
+
+  if (reportFilterMode === "mingguan") {
+    start = dayjs().isoWeekday(1).startOf("day"); // Senin minggu ini
+    end = dayjs().isoWeekday(5).endOf("day");     // Jumat minggu ini
+  } else if (reportFilterMode === "bulanan") {
+    start = dayjs().startOf("month");
+    end = dayjs().endOf("month");
+  } else {
+    const month = dayjs().month() + 1;
+    const semester = month >= 1 && month <= 6 ? 1 : 2;
+    const year = dayjs().year();
+    if (semester === 1) {
+      start = dayjs(`${year}-01-01`);
+      end = dayjs(`${year}-06-30`);
+    } else {
+      start = dayjs(`${year}-07-01`);
+      end = dayjs(`${year}-12-31`);
+    }
+  }
+
+  setCurrentStart(start);
+  setCurrentEnd(end);
+}, [reportFilterMode]);
+
+
+
+
+
+
 
   const filteredReport = useMemo(() => {
     const q = searchReport.trim().toLowerCase();
@@ -165,7 +213,135 @@ useEffect(() => {
   
 console.log("Rekap dari backend:", props.rekap);
 
+  // ----------------- REPORT KEHADIRAN RANGE -----------------
+const [reportDate, setReportDate] = useState(dayjs());
+const [setReportPeriodLabel] = useState("");
+const [reportStart, setReportStart] = useState<string>("");
+const [reportEnd, setReportEnd] = useState<string>("");
+
+const reportPeriodLabel = useMemo(() => {
+  if (reportFilterMode === "mingguan") {
+    // format: 06–10 Juli 2025 (gunakan dayjs)
+    const sameMonth = currentStart.month() === currentEnd.month();
+    return sameMonth
+      ? `${currentStart.format("DD")}–${currentEnd.format("DD MMMM YYYY")}`
+      : `${currentStart.format("DD MMM")}–${currentEnd.format("DD MMM YYYY")}`;
+  }
+
+  if (reportFilterMode === "bulanan") {
+    return currentStart.format("MMMM YYYY");
+  }
+
+  // semester
+  const month = currentStart.month() + 1;
+  const semester = month >= 1 && month <= 6 ? 1 : 2;
+  return `Semester ${semester} — ${currentStart.year()}`;
+}, [reportFilterMode, currentStart, currentEnd]);
+
+// fungsi untuk update label & tanggal sesuai range
+const updateReportPeriod = () => {
+  let start: dayjs.Dayjs, end: dayjs.Dayjs, label = "";
+
+  if (reportFilterMode === "mingguan") {
+    start = reportDate.isoWeekday(1); // Senin
+    end = reportDate.isoWeekday(5);   // Jumat
+    const sameMonth = start.month() === end.month();
+    label = sameMonth
+      ? `${start.format("DD")}–${end.format("DD MMMM YYYY")}`
+      : `${start.format("DD MMM")}–${end.format("DD MMM YYYY")}`;
+  } else if (reportFilterMode === "bulanan") {
+    start = reportDate.startOf("month");
+    end = reportDate.endOf("month");
+    label = reportDate.format("MMMM YYYY");
+  } else {
+    const month = reportDate.month() + 1;
+    const semester = month >= 1 && month <= 6 ? 1 : 2;
+    const year = reportDate.year();
+    if (semester === 1) {
+      start = dayjs(`${year}-01-01`);
+      end = dayjs(`${year}-06-30`);
+    } else {
+      start = dayjs(`${year}-07-01`);
+      end = dayjs(`${year}-12-31`);
+    }
+    label = `Semester ${semester} — ${year}`;
+  }
+
   
+  setReportStart(start.format("YYYY-MM-DD"));
+  setReportEnd(end.format("YYYY-MM-DD"));
+};
+
+// panggil setiap kali filterMode atau tanggal berubah
+useEffect(() => {
+  updateReportPeriod();
+}, [reportFilterMode, reportDate]);
+
+// navigasi prev / next
+const navigateReportPeriod = (dir: "prev" | "next") => {
+  const delta = dir === "prev" ? -1 : 1;
+
+  if (reportFilterMode === "mingguan") {
+    setCurrentStart((prev) => prev.add(delta, "week").isoWeekday(1));
+    setCurrentEnd((prev) => prev.add(delta, "week").isoWeekday(5));
+  } else if (reportFilterMode === "bulanan") {
+    setCurrentStart((prev) => prev.add(delta, "month").startOf("month"));
+    setCurrentEnd((prev) => prev.add(delta, "month").endOf("month"));
+  } else {
+    // semester step 6 bulan; ensure start is semester start
+    setCurrentStart((prev) => {
+      // find semester start for prev/next
+      const candidate = prev.add(delta * 6, "month");
+      const month = candidate.month() + 1;
+      const semesterStart =
+        month <= 6 ? dayjs(`${candidate.year()}-01-01`) : dayjs(`${candidate.year()}-07-01`);
+      return semesterStart.startOf("day");
+    });
+    setCurrentEnd((prev) => {
+      const candidate = prev.add(delta * 6, "month");
+      const month = candidate.month() + 1;
+      const semesterEnd =
+        month <= 6 ? dayjs(`${candidate.year()}-06-30`) : dayjs(`${candidate.year()}-12-31`);
+      return semesterEnd.endOf("day");
+    });
+  }
+
+  // saat pindah periode, reset page ke 1 (lihat pagination di bawah)
+  setReportPage(1);
+};
+
+
+
+// refetch otomatis saat periode berubah
+useEffect(() => {
+  if (!reportStart || !reportEnd) return;
+  axios
+    .get(`/api/admin/dashboard/report`, {
+      params: {
+        range: reportFilterMode,
+        start_date: reportStart,
+        end_date: reportEnd,
+      },
+    })
+    .then((res) => setReportData(res.data.data ?? []))
+    .catch((err) => console.error("Gagal ambil report:", err));
+}, [reportStart, reportEnd]);
+
+const [reportPage, setReportPage] = useState<number>(1);
+const REPORT_PAGE_SIZE = 5;
+
+useEffect(() => {
+  setReportPage(1);
+}, [reportFilterMode, currentStart, currentEnd, searchReport, reportData]);
+
+// paginated slice
+const totalReportItems = filteredReport.length;
+const totalReportPages = Math.max(1, Math.ceil(totalReportItems / REPORT_PAGE_SIZE));
+const paginatedReport = useMemo(() => {
+  const startIdx = (reportPage - 1) * REPORT_PAGE_SIZE;
+  return filteredReport.slice(startIdx, startIdx + REPORT_PAGE_SIZE);
+}, [filteredReport, reportPage]);
+
 
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
@@ -404,19 +580,31 @@ console.log("Rekap dari backend:", props.rekap);
           </div>
   {/* Report Kehadiran Table (uses restored reportFilterMode/searchReport/filteredReport) */}
             <div className="bg-white rounded-xl shadow p-4 border border-[#6200EE]">
-              <div className="flex items-center justify-between mb-3">
-                <div className="font-semibold">Report Kehadiran</div>
-                <div className="flex items-center gap-3">
-                  <div className="text-sm text-gray-600"></div>
-                  <div className="space-x-2">
-                    <button onClick={() => setReportFilterMode('mingguan')} className={`px-3 py-1 rounded ${reportFilterMode === 'mingguan' ? 'bg-[#6200EE] text-white' : 'bg-gray-100'}`}>Mingguan</button>
-                    <button onClick={() => setReportFilterMode('bulanan')} className={`px-3 py-1 rounded ${reportFilterMode === 'bulanan' ? 'bg-[#6200EE] text-white' : 'bg-gray-100'}`}>Bulanan</button>
-                    <button onClick={() => setReportFilterMode('semester')} className={`px-3 py-1 rounded ${reportFilterMode === 'semester' ? 'bg-[#6200EE] text-white' : 'bg-gray-100'}`}>Semester</button>
-                  </div>
-                  <input value={searchReport} onChange={e => setSearchReport(e.target.value)} placeholder="cari" className="border rounded px-3 py-2 text-sm" />
-                  <button className="px-3 py-2 bg-green-500 text-white rounded">Download Report</button>
-                </div>
-              </div>
+             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-3">
+  <div className="font-semibold text-lg">Report Kehadiran</div>
+
+  <div className="flex items-center gap-2">
+    <button onClick={() => navigateReportPeriod("prev")} className="px-2 py-1 rounded border bg-gray-100 hover:bg-gray-200">◀</button>
+    <div className="text-sm font-medium text-gray-700 min-w-[150px] text-center">{reportPeriodLabel}</div>
+    <button onClick={() => navigateReportPeriod("next")} className="px-2 py-1 rounded border bg-gray-100 hover:bg-gray-200">▶</button>
+  </div>
+
+  <div className="flex items-center gap-2 flex-wrap justify-end">
+    <button onClick={() => setReportFilterMode("mingguan")} className={`px-3 py-1 rounded ${reportFilterMode === "mingguan" ? "bg-[#6200EE] text-white" : "bg-gray-100"}`}>Mingguan</button>
+    <button onClick={() => setReportFilterMode("bulanan")} className={`px-3 py-1 rounded ${reportFilterMode === "bulanan" ? "bg-[#6200EE] text-white" : "bg-gray-100"}`}>Bulanan</button>
+    <button onClick={() => setReportFilterMode("semester")} className={`px-3 py-1 rounded ${reportFilterMode === "semester" ? "bg-[#6200EE] text-white" : "bg-gray-100"}`}>Semester</button>
+
+    <input
+      value={searchReport}
+      onChange={(e) => setSearchReport(e.target.value)}
+      placeholder="cari"
+      className="border rounded px-3 py-2 text-sm"
+    />
+    <button className="px-3 py-2 bg-green-500 text-white rounded">Download Report</button>
+  </div>
+</div>
+
+
 
               <div className="overflow-auto">
                 <table className="min-w-full text-sm">
@@ -454,6 +642,36 @@ console.log("Rekap dari backend:", props.rekap);
                     ))}
                   </tbody>
                 </table>
+                {/* Pagination */}
+<div className="flex items-center justify-between mt-3">
+  <div className="text-sm text-gray-600">
+    Menampilkan {Math.min((reportPage - 1) * REPORT_PAGE_SIZE + 1, totalReportItems)} - {Math.min(reportPage * REPORT_PAGE_SIZE, totalReportItems)} dari {totalReportItems}
+  </div>
+
+  <div className="flex items-center gap-2">
+    <button
+      onClick={() => setReportPage((p) => Math.max(1, p - 1))}
+      disabled={reportPage === 1}
+      className={`px-2 py-1 rounded border ${reportPage === 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      Prev
+    </button>
+
+    {/* optional: show page numbers */}
+    <div className="text-sm">
+      {reportPage} / {totalReportPages}
+    </div>
+
+    <button
+      onClick={() => setReportPage((p) => Math.min(totalReportPages, p + 1))}
+      disabled={reportPage === totalReportPages}
+      className={`px-2 py-1 rounded border ${reportPage === totalReportPages ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+      Next
+    </button>
+  </div>
+</div>
+
               </div>
             </div>
 

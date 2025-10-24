@@ -32,6 +32,12 @@ use App\Http\Controllers\API\EditProfileOrtuGuruController;
 use App\Http\Controllers\Admin\AdminRiwayatKehadiranController;
 use App\Http\Controllers\Api\AdminRekapDashboardController;
 use App\Http\Controllers\Api\AdminDashboardStatistikController;
+use App\Http\Controllers\Api\AdminDashboardReportController;
+
+Route::prefix('admin/dashboard')->group(function () {
+    Route::get('/report', [AdminDashboardReportController::class, 'index']);
+});
+
 
 Route::prefix('admin')->group(function () {
     Route::prefix('dashboard')->group(function () {
