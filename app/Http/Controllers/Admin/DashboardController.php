@@ -10,6 +10,8 @@ use App\Models\Eskul;
 use App\Models\Kehadiran;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class DashboardController extends Controller
 {
@@ -17,60 +19,47 @@ class DashboardController extends Controller
     {
         $today = Carbon::today();
 
-        // -----------------------------
         // 📊 Data dasar
-        // -----------------------------
         $total_users = User::count();
         $total_eskul = Eskul::count();
+        $total_events = Event::count();
 
-        // -----------------------------
-        // 📅 Event (dengan status prioritas)
-        // -----------------------------
+        // 📅 Event (status prioritas)
         $events = Event::orderByRaw("
             CASE 
-                WHEN is_published = 1 AND end_date < ? THEN 1                -- Selesai
-                WHEN is_published = 0 AND start_date > ? THEN 2              -- Draft
-                WHEN is_published = 1 AND start_date > ? THEN 3              -- Published
-                WHEN is_published = 1 AND start_date <= ? AND end_date >= ? THEN 4  -- Aktif
-                WHEN is_published = 0 AND end_date < ? THEN 5                -- Tidak Aktif
+                WHEN is_published = 1 AND end_date < ? THEN 1
+                WHEN is_published = 0 AND start_date > ? THEN 2
+                WHEN is_published = 1 AND start_date > ? THEN 3
+                WHEN is_published = 1 AND start_date <= ? AND end_date >= ? THEN 4
+                WHEN is_published = 0 AND end_date < ? THEN 5
                 ELSE 6
             END
         ", [$today, $today, $today, $today, $today, $today])
-        ->orderBy('start_date', 'asc')
-        ->take(5)
-        ->get()
-        ->map(function ($event) use ($today) {
-            if ($event->is_published) {
-                if ($event->end_date < $today) {
-                    $event->status_event = 'Selesai';
-                } elseif ($event->start_date <= $today && $event->end_date >= $today) {
-                    $event->status_event = 'Aktif';
+            ->orderBy('start_date', 'asc')
+            ->take(5)
+            ->get()
+            ->map(function ($event) use ($today) {
+                if ($event->is_published) {
+                    if ($event->end_date < $today) {
+                        $event->status_event = 'Selesai';
+                    } elseif ($event->start_date <= $today && $event->end_date >= $today) {
+                        $event->status_event = 'Aktif';
+                    } else {
+                        $event->status_event = 'Published';
+                    }
                 } else {
-                    $event->status_event = 'Published';
+                    $event->status_event = $event->start_date > $today ? 'Draft' : 'Tidak Aktif';
                 }
-            } else {
-                if ($event->start_date > $today) {
-                    $event->status_event = 'Draft';
-                } else {
-                    $event->status_event = 'Tidak Aktif';
-                }
-            }
-            return $event;
-        });
+                return $event;
+            });
 
-        $total_events = Event::count();
-
-        // -----------------------------
-        // 📆 Hitung hari kerja dalam bulan ini (tanpa Sabtu & Minggu)
-        // -----------------------------
+        // 📆 Hitung hari kerja bulan ini
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
         $period = CarbonPeriod::create($startOfMonth, $endOfMonth);
         $total_hari_kerja = collect($period)->filter(fn($d) => !$d->isWeekend())->count();
 
-        // -----------------------------
-        // 📈 Rata-rata kehadiran sekolah (bulan ini)
-        // -----------------------------
+        // 📈 Persentase kehadiran sekolah
         $total_hadir = Kehadiran::where('kehadiran', 'hadir')
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->count();
@@ -82,41 +71,71 @@ class DashboardController extends Controller
             ? round(($total_hadir / $total_kehadiran_ideal) * 100, 2)
             : 0;
 
-        // -----------------------------
         // 🧮 Rekap kehadiran per siswa (Top 3)
-        // -----------------------------
-        $rekap = Kehadiran::select('murid_id')
-            ->selectRaw('SUM(CASE WHEN kehadiran IN ("Hadir", "terlambat") THEN 1 ELSE 0 END) as hadir')
-            ->selectRaw('SUM(CASE WHEN kehadiran = "Tidak Hadir" THEN 1 ELSE 0 END) as tidak_hadir')
-            ->groupBy('murid_id')
+        // 🧮 Rekap kehadiran per siswa (Top 3)
+$rekap = Kehadiran::select('murid_id')
+    ->selectRaw('SUM(CASE WHEN kehadiran IN ("Hadir", "terlambat") THEN 1 ELSE 0 END) as hadir')
+    ->groupBy('murid_id')
+    ->get()
+    ->map(function ($r) use ($total_hari_kerja) {
+        $user = User::find($r->murid_id);
+        $hadir = (int) $r->hadir;
+        $percent = $total_hari_kerja > 0 ? round(($hadir / $total_hari_kerja) * 100) : 0;
+
+        // ✅ Tentukan avatar hybrid dengan fallback aman
+        $avatarUrl = asset('default-avatar.png'); // default dulu
+
+        if ($user) {
+            if ($user->avatar_path && Storage::disk('public')->exists($user->avatar_path)) {
+                $avatarUrl = asset('storage/' . $user->avatar_path);
+            
+            }
+        }
+
+        return [
+            'id' => $r->murid_id,
+            'nama' => $user?->name ?? 'Unknown',
+            'avatar' => $avatarUrl,
+            'kelas' => $user?->kelas?->name ?? '-',
+            'total' => "{$hadir}/{$total_hari_kerja}",
+            'persentase' => $percent,
+        ];
+    })
+    ->sortByDesc(fn($x) => $x['persentase'])
+    ->values()
+    ->take(3);
+
+
+        // 👥 User list dengan avatar hybrid
+        $users = User::latest()
+            ->take(5)
             ->get()
-            ->map(function ($r) use ($total_hari_kerja) {
-                $hadir = (int)$r->hadir;
-                $percent = $total_hari_kerja > 0 ? round(($hadir / $total_hari_kerja) * 100) : 0;
+            ->map(function ($u) {
+                if ($u->avatar_path && Storage::disk('public')->exists($u->avatar_path)) {
+                    $avatarUrl = asset('storage/' . str_replace('public/', '', $u->avatar_path));
+                } elseif ($u->avatar && str_starts_with($u->avatar, 'data:image')) {
+                    $avatarUrl = $u->avatar;
+                } else {
+                    $avatarUrl = asset('images/default-avatar.png');
+                }
 
-                $user = User::find($r->murid_id);
-                return [
-                    'id' => $r->murid_id,
-                    'name' => $user?->name ?? 'Unknown',
-                    'avatar_url' => $user?->avatar ?? '/images/avatar-placeholder.png',
-                    'kelas' => is_object($user?->kelas) ? ($user->kelas->name ?? '-') : ($user?->kelas ?? '-'),
-                    'total' => "{$hadir}/{$total_hari_kerja}",
-                    'persentase' => $percent,
-                ];
-            })
-            ->sortByDesc(fn($x) => $x['persentase'])
-            ->values()
-            ->take(3);
+                $u->avatar = $avatarUrl;
+                return $u;
+            });
 
-        // -----------------------------
-        // 📋 Data tambahan untuk dashboard
-        // -----------------------------
-        $users = User::latest()->take(5)->get();
-        $eskuls = Eskul::withCount(['siswa as anggota_count'])->latest()->take(5)->get();
+        // ⚽ Data eskul
+        $eskuls = Eskul::withCount(['siswa as anggota_count'])
+            ->latest()
+            ->take(5)
+            ->get();
 
-        // -----------------------------
         // 📤 Kirim ke Inertia
-        // -----------------------------
+        Log::info('Avatar URL Sample', [
+            'rekap_sample_avatar' => $rekap->first()['avatar'] ?? null
+        ]);
+
+        
+
         return inertia('Admin/AdminDashboard', [
             'total_users' => $total_users,
             'total_events' => $total_events,
@@ -130,12 +149,7 @@ class DashboardController extends Controller
             'users' => $users,
             'events' => $events,
             'eskuls' => $eskuls,
+            
         ]);
     }
-
-public function index1() {
-    return inertia('dashboard');
 }
-
-}
-

@@ -30,6 +30,18 @@ use App\Http\Controllers\Api\ApiMuridOverviewController;
 
 use App\Http\Controllers\API\EditProfileOrtuGuruController;
 use App\Http\Controllers\Admin\AdminRiwayatKehadiranController;
+use App\Http\Controllers\Api\AdminRekapDashboardController;
+use App\Http\Controllers\Api\AdminDashboardStatistikController;
+
+Route::prefix('admin')->group(function () {
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/statistik', [AdminDashboardStatistikController::class, 'index']);
+    });
+});
+
+
+Route::get('/admin/rekap-kehadiran', [AdminRekapDashboardController::class, 'index']);
+
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/admin/riwayat-kehadiran', [AdminRiwayatKehadiranController::class, 'index']);

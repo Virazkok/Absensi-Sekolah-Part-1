@@ -1,115 +1,135 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
 import { FormEventHandler } from 'react';
-
-import InputError from '@/components/input-error';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import AuthLayout from '@/layouts/auth-layout';
 import axios from 'axios';
 
+import InputError from '@/components/input-error';
+import { Input } from '@/components/ui/input';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = 'http://127.0.0.1:8000';
 
-
 type LoginForm = {
-    email: string;
-    password: string;
-    remember: boolean;
+  email: string;
+  password: string;
+  remember: boolean;
 };
 
 interface LoginProps {
-    status?: string;
-    canResetPassword: boolean;
+  status?: string;
+  canResetPassword: boolean;
 }
 
 export default function Login({ status, canResetPassword }: LoginProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
-        password: '',
-        remember: false,
-    });
+  const { data, setData, post, processing, errors } = useForm<Required<LoginForm>>({
+    email: '',
+    password: '',
+    remember: false,
+  });
 
   const submit: FormEventHandler = async (e) => {
-  e.preventDefault();
-  try {
-    // 1. Ambil CSRF cookie dulu
-   await axios.get("/sanctum/csrf-cookie");
+    e.preventDefault();
+    try {
+      await axios.get('/sanctum/csrf-cookie');
 
-const formData = new FormData();
-formData.append('email', data.email);
-formData.append('password', data.password);
+      const formData = new FormData();
+      formData.append('email', data.email);
+      formData.append('password', data.password);
 
-await axios.post("/login", formData, {
-  headers: {
-    'Content-Type': 'multipart/form-data',
-  },
-});
+      await axios.post('/login', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
 
+      const res = await axios.get('/api/student/me');
+      localStorage.setItem('user', JSON.stringify(res.data));
 
-    // 3. Ambil data user yang sedang login
-    const res = await axios.get("/api/student/me"); // pastikan kamu punya endpoint ini
-    const student = res.data;
+      window.location.href = '/murid/home';
+    } catch (err: any) {
+      console.error('Login gagal', err);
+      alert('Login gagal: ' + err.message);
+    }
+  };
 
-    // 4. Simpan ke localStorage
-    localStorage.setItem("user", JSON.stringify(student));
-
-    // 5. Redirect ke riwayat
-    window.location.href = "/murid/home";
-  } catch (err: any) {
-    console.error("Login gagal", err);
-    alert("Login gagal: " + err.message);
-  }
-};
-
-
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <form className="bg-white p-6 rounded-lg shadow-md w-full max-w-sm flex-col " onSubmit={submit}>
-                <h2 className="text-2xl font-semibold text-center mb-6 text-gray-900">Login Siswa</h2>
-                    <div className='grid gap-6'>
-                    <div className='grid gap-2'>
-                        <label className="block mb-2 text-sm text-gray-900 ">Email</label>
-                        <Input
-                    id="email"
-                    type="email"
-                    required
-                    autoFocus
-                    tabIndex={1}
-                    autoComplete="email"
-                    value={data.email}
-                    onChange={(e) => setData('email', e.target.value)}
-                    placeholder="email@example.com"
-                    className="w-full border px-3 py-2 rounded mb-4 text-gray-900"
-                />
-                <InputError message={errors.email} />
-            </div>
-            <div className='grid gap-2'>
-                <label className="block mb-2 text-sm text-gray-900">Password</label>
-                <Input
-                    id="password"
-                    type="password"
-                    required
-                    tabIndex={2}
-                    autoComplete="current-password"
-                    value={data.password}
-                    onChange={(e) => setData('password', e.target.value)}
-                    placeholder="Password"
-                    className="w-full border px-3 py-2 rounded mb-6 text-gray-900"
-                />
-                </div>
-                <InputError message={errors.password} />
-
-                <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded" onClick={submit}>
-                    Login
-                </button>
-                </div>
-            </form>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white rounded-t-lg shadow-md w-full max-w-225 flex-col overflow-hidden">
+        {/* Bagian atas (gambar) */}
+        <div className="flex justify-center bg-white relative">
+          <img
+            src="/icons/Icon-Login.jpeg"
+            alt="Login Illustration"
+            className="mt-6 w-276px h-276px object-contain"
+          />
         </div>
-    );
+
+        {/* Form dengan wave di belakang tulisan Log In */}
+        <form
+          className="relative bg-purple-700 text-white p-6 pt-12 shadow-md w-full flex flex-col justify-center items-center overflow-hidden"
+          onSubmit={submit}
+        >
+          {/* SVG wave di belakang tulisan */}
+          <svg
+            className="absolute top-0 left-0 bottom-0 "
+            viewBox="0 100 1440 320"
+            xmlns="http://www.w3.org/2000/svg"
+          > 
+            <path
+              fill="white"
+            d="M0,160L0,154.7C160,149,320,139,480,144C640,149,800,171,960,181.3C1120,192,1280,192,1360,186.7L1440,181.3L1440,0L0,0Z"
+
+            ></path>
+          </svg>
+
+          
+
+          {/* Form content */}
+          <div className="relative z-10 grid gap-6 w-full justify-center">
+            <h2 className="relative text-[36px] font-semibold mb-0 z-10 text-left">Log In</h2>
+            {/* Email */}
+            <div className="grid gap-2 w-80">
+              <label className="block mb-2 text-[16px] text-white">Email</label>
+              <Input
+                id="email"
+                type="email"
+                required
+                autoFocus
+                tabIndex={1}
+                autoComplete="email"
+                value={data.email}
+                onChange={(e) => setData('email', e.target.value)}
+                placeholder="email@example.com"
+                className="w-full border px-3 py-2 rounded text-white-900 text[14px] border-[#DD661D]"
+              />
+              <InputError message={errors.email} />
+            </div>
+
+            {/* Password */}
+            <div className="grid gap-2">
+              <label className="block mb-2 text-[16px] text-white">Password</label>
+              <Input
+                id="password"
+                type="password"
+                required
+                tabIndex={2}
+                autoComplete="current-password"
+                value={data.password}
+                onChange={(e) => setData('password', e.target.value)}
+                placeholder="Password"
+                className="w-full border px-3 py-2 rounded text-white-900 text[14px] border-[#DD661D]"
+              />
+              <InputError message={errors.password} />
+            </div>
+
+            {/* Tombol login */}
+            <button
+              type="submit"
+              className="w-full bg-[#DD661D] hover:bg-[#DD661D] text-white py-2 rounded font-semibold transition-all"
+              disabled={processing}
+            >
+              {processing ? 'Memproses...' : 'Gabung'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
 }
