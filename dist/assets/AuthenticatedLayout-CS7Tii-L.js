@@ -1,0 +1,1 @@
+import{j as e,H as t}from"./app-Db-aw5MQ.js";const r=({user:i,header:n,children:s})=>e.jsxs("div",{className:"min-h-screen bg-white",children:[e.jsxs(t,{children:[e.jsx("title",{children:"Absensi Sekolah"}),e.jsx("meta",{name:"description",content:"Sistem Absensi Sekolah"})]}),e.jsx("main",{children:s})]});export{r as A};
