@@ -4,7 +4,13 @@ import laravel from 'laravel-vite-plugin';
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 
+
+
 export default defineConfig({
+
+  build: {
+    outDir: 'dist', // penting!
+  },
   server: {
     proxy: {
       '/api': {
