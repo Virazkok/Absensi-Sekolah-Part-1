@@ -25,8 +25,9 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Install dependensi PHP Laravel
 RUN composer install --optimize-autoloader --no-dev
 
-# Jalankan perintah Laravel
-RUN php artisan key:generate
+# Jalankan Laravel saat container start
+CMD php artisan key:generate && php artisan serve --host=0.0.0.0 --port=80
+
 
 # Expose port 80 untuk Railway
 EXPOSE 80
