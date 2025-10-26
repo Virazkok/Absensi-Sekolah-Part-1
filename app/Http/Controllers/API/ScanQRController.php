@@ -4,6 +4,9 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Murid;
+use App\Models\EventAttendance;
+use App\Models\EventRegistration;
+use App\Models\Event;
 use App\Models\Kehadiran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -71,6 +74,53 @@ class ScanQRController extends Controller
             ], 500);
         }
     }
+
+     public function scanEvent(Request $request)
+{
+    $data = $request->input('qr_data');
+
+    // Pastikan QR punya event_id & token
+    if (!isset($data['event_id']) || !isset($data['qr_token'])) {
+        return response()->json(['message' => 'Format QR tidak valid'], 400);
+    }
+
+    // Ambil event berdasarkan event_id dari QR
+    $event = Event::find($data['event_id']);
+    if (!$event) {
+        return response()->json(['message' => 'Event tidak ditemukan'], 404);
+    }
+
+    // 🔹 Hapus validasi strict token agar bisa scan banyak event
+    // (opsional: tetap cek kalau mau minimal validasi keamanan)
+    // if ($event->qr_token !== $data['token']) {
+    //     return response()->json(['message' => 'Token QR tidak valid'], 400);
+    // }
+
+    // Cari registrasi user berdasarkan user_id (atau registration_id kalau mau)
+    $registration = EventRegistration::where('event_id', $event->id)
+        ->where('user_id', $data['user_id'] ?? null)
+        ->first();
+
+    if (!$registration) {
+        return response()->json(['message' => 'Peserta tidak ditemukan'], 404);
+    }
+
+    // Catat kehadiran
+    EventAttendance::updateOrCreate(
+        ['registration_id' => $registration->id],
+        [
+            'event_id'    => $event->id,
+            'murid_id'    => $registration->murid_id ?? null,
+            'attended_at' => now(),
+        ]
+    );
+
+    return response()->json([
+        'message'      => 'Kehadiran berhasil dicatat',
+        'registration' => $registration,
+        'event'        => $event
+    ]);
+}
 
     public function scanCheckOut(Request $request)
     {
