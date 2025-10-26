@@ -15,6 +15,7 @@
     use App\Http\Controllers\Admin\DashboardController;
     use App\Http\Controllers\Admin\UserManagementController;
     use App\Http\Controllers\OrangTua\OrangTuaGuruController;
+    use Illuminate\Support\Facades\Artisan;
 
    use App\Http\Controllers\Admin\AdminRiwayatKehadiranController;
 
@@ -24,6 +25,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('admin.kehadiran-riwayat');
 });
 
+Route::get('/debug', function () {
+    try {
+        Artisan::call('migrate:status');
+        return nl2br(Artisan::output());
+    } catch (\Throwable $e) {
+        return $e->getMessage();
+    }
+});
 
 
     

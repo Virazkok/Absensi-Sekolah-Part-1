@@ -49,5 +49,8 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN php artisan config:cache && php artisan route:cache && php artisan view:cache || true
 
+CMD php artisan optimize:clear && php artisan serve --host=0.0.0.0 --port=80
+
+
 EXPOSE 80
 CMD ["apache2-foreground"]
