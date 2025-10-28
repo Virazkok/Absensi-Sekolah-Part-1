@@ -20,7 +20,7 @@ class DashboardController extends Controller
         $today = Carbon::today();
 
         // 📊 Data dasar
-        $total_users = User::count();
+        $total_users = User::where('role', 'murid')->count();
         $total_eskul = Eskul::count();
         $total_events = Event::count();
 

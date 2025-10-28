@@ -23,8 +23,10 @@ interface PageProps {
   auth: { user: any };
   events: Event[];
 }
-
+type Props = any;
 export default function AdminEvent() {
+  const { props } = usePage<Props>();
+  const { user } = props;
   const { events } = usePage<PageProps>().props;
 
   const [search, setSearch] = useState("");
@@ -53,36 +55,48 @@ export default function AdminEvent() {
       <Head title="Event Management" />
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-56 bg-white h-screen p-4 shadow-sm border-r border-gray-200">
+        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
           <nav className="space-y-2 text-sm">
             <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
             <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
             <div onClick={() => (window.location.href = '/admin/events')}
-              className="p-2 rounded bg-[#FFE9D6] font-medium cursor-pointer text-[#D76619]">📅 Event Manajemen</div>
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--list-settings-lineW.svg" alt="" /> Event Manajemen</div>
             <div onClick={() => (window.location.href = '/admin/eskul')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">⚽ Ekstrakurikuler</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
             <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Riwayat Kehadiran</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
             <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📊 Statistik Kehadiran</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
             <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📄 Laporan</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
           </nav>
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-2xl font-semibold">Event Management</h1>
-              <p className="text-sm text-gray-600 mt-1">
+          <div className="justify-between items-center mb-6">
+            {/* Header */}
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
+            <h1 className="text-2xl font-bold">Event Management</h1>
+            <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
+              <div className="flex items-center gap-2 p-2">
+                <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
+              </div>
+              <div>
+              <button className="p-2 rounded bg-white">⚙️</button>
+              <button className="p-2 rounded bg-white">🔓</button>
+              </div>
+              
+            </div>
+          </div>
+          <div className="flex justify-between">
+            <p className="text-sm text-gray-600 mt-5">
                 Semua Event <span className="font-semibold">{events.length}</span>
               </p>
-            </div>
-
             <div className="flex items-center gap-3">
               <input
                 type="text"
@@ -108,6 +122,7 @@ export default function AdminEvent() {
                 Tambah Event
               </Button>
             </div>
+          </div>
           </div>
 
           {/* Table */}

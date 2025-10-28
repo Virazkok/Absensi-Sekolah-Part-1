@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Murid;
 use App\Models\Kehadiran;
 use App\Models\KehadiranEskul;
 use App\Models\EventKehadiran;
@@ -16,193 +17,286 @@ class LaporanController extends Controller
 {
     public function sekolah(Request $request)
     {
-        $range = $request->query('range', 'monthly');
+        $range = $request->query('range', 'bulanan');
         $kelasId = $request->query('kelas_id', null);
         $bulan = (int) $request->query('bulan', Carbon::now()->month);
         $tahun = (int) $request->query('tahun', Carbon::now()->year);
         $semester = (int) $request->query('semester', 1);
 
-        $query = Kehadiran::with('murid.kelas');
+        $now = Carbon::now('Asia/Jakarta');
 
-        if ($kelasId) {
-            $query->where('kelas_id', $kelasId);
+        // === Tentukan Rentang Tanggal ===
+        switch ($range) {
+            case 'mingguan':
+                $startDate = $request->query('start_date');
+                $endDate = $request->query('end_date');
+                if ($startDate && $endDate) {
+                    $start = Carbon::parse($startDate)->startOfDay();
+                    $end = Carbon::parse($endDate)->endOfDay();
+                } else {
+                    $start = $now->copy()->startOfWeek(Carbon::MONDAY);
+                    $end = $now->copy()->startOfWeek(Carbon::MONDAY)->addDays(4)->endOfDay();
+                }
+                break;
+
+            case 'semester':
+    $startDate = $request->query('start_date');
+    $endDate = $request->query('end_date');
+
+    if ($startDate && $endDate) {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+    } else {
+        if ($semester === 1) {
+            // Semester 1: Juli–Desember tahun ini
+            $start = Carbon::create($tahun, 7, 1)->startOfDay();
+            $end = Carbon::create($tahun, 12, 31)->endOfDay();
+        } else {
+            // Semester 2: Januari–Juni tahun berikutnya
+            $start = Carbon::create($tahun + 1, 1, 1)->startOfDay();
+            $end = Carbon::create($tahun + 1, 6, 30)->endOfDay();
+        }
+    }
+    break;
+
+
+            default: // bulanan
+                $startDate = $request->query('start_date');
+                $endDate = $request->query('end_date');
+                if ($startDate && $endDate) {
+                    $start = Carbon::parse($startDate)->startOfDay();
+                    $end = Carbon::parse($endDate)->endOfDay();
+                } else {
+                    $start = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+                    $end = Carbon::create($tahun, $bulan, 1)->endOfMonth();
+                }
+                break;
         }
 
-        if ($range === "semester") {
-            // semester 1 => Jan-Jun, semester 2 => Jul-Dec
-            if ($semester === 1) {
-                $start = Carbon::create($tahun, 1, 1)->startOfDay();
-                $end = Carbon::create($tahun, 6, 30)->endOfDay();
-            } else {
-                $start = Carbon::create($tahun, 7, 1)->startOfDay();
-                $end = Carbon::create($tahun, 12, 31)->endOfDay();
-            }
-            $query->whereBetween('tanggal', [$start, $end]);
-        } elseif ($range === "monthly" || $range === "rekap") {
-            // monthly (default). For 'rekap' we treat same as monthly here; frontend can choose range accordingly.
-            $query->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun);
-        } elseif ($range === "daily") {
-            $query->whereDate('tanggal', Carbon::today());
-        } elseif ($range === "weekly") {
-            $query->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
-        } elseif ($range === "custom") {
-            $start = $request->query('start');
-            $end = $request->query('end');
-            if ($start && $end) {
-                $query->whereBetween('tanggal', [$start, $end]);
-            }
-        }
+        // === Ambil semua murid agar yang tidak hadir tetap muncul ===
+        $muridQuery = Murid::with('kelas');
+        if ($kelasId) $muridQuery->where('kelas_id', $kelasId);
+        $murids = $muridQuery->get();
 
-        $data = $query->get()->groupBy('murid_id')->map(function ($items) {
-            $murid = $items->first()->murid;
+        // === Query Kehadiran Sekolah ===
+        $kehadiran = Kehadiran::with('murid.kelas')
+            ->whereBetween('tanggal', [$start, $end])
+            ->get()
+            ->groupBy('murid_id');
+
+        $data = $murids->map(function ($murid, $idx) use ($kehadiran) {
+            $items = $kehadiran->get($murid->id, collect());
             $hadir = $items->whereIn('kehadiran', ['Hadir', 'Terlambat'])->count();
-            $terlambat = $items->where('kehadiran', 'Terlambat')->count();
             $total = $items->count();
-            return [
-                'nama' => $murid->nama ?? $items->first()->nama ?? '-',
-                'keterangan' => $murid->kelas->name ?? '-',
-                'hadir' => $hadir,
-                'tidak_hadir' => $total - $hadir,
-                'terlambat' => $terlambat,
-            ];
-        })->values();
 
-        return response()->json($data);
+            return [
+                'no' => $idx + 1,
+                'nama' => $murid->nama ?? '-',
+                'kelas' => $murid->kelas->name ?? '-',
+                'keahlian' => $murid->kelas->kejuruan ?? $murid->keahlian ?? '-',
+                'hadir_sekolah' => $hadir,
+                'hadir_ekskul' => 0,
+                'hadir_event' => 0,
+                'total' => $hadir,
+                'keterangan' => $total > 0 ? 'Baik' : 'Belum Hadir',
+            ];
+        });
+
+        return response()->json([
+            'range' => $range,
+            'periode' => [
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+            ],
+            'data' => $data->values()->toArray(),
+        ]);
     }
 
     public function eskul(Request $request)
     {
-        $range = $request->query('range', 'monthly');
+        $range = $request->query('range', 'bulanan');
         $eskulId = $request->query('eskul_id', null);
         $bulan = (int) $request->query('bulan', Carbon::now()->month);
         $tahun = (int) $request->query('tahun', Carbon::now()->year);
         $semester = (int) $request->query('semester', 1);
 
-        $query = KehadiranEskul::with(['user', 'absensi.eskul']);
+        $now = Carbon::now('Asia/Jakarta');
 
-        if ($eskulId) {
-            $query->whereHas('absensi', fn($q) => $q->where('eskul_id', $eskulId));
+        switch ($range) {
+            case 'mingguan':
+                $startDate = $request->query('start_date');
+                $endDate = $request->query('end_date');
+                if ($startDate && $endDate) {
+                    $start = Carbon::parse($startDate)->startOfDay();
+                    $end = Carbon::parse($endDate)->endOfDay();
+                } else {
+                    $start = $now->copy()->startOfWeek(Carbon::MONDAY);
+                    $end = $now->copy()->startOfWeek(Carbon::MONDAY)->addDays(4)->endOfDay();
+                }
+                break;
+
+            case 'semester':
+    $startDate = $request->query('start_date');
+    $endDate = $request->query('end_date');
+
+    if ($startDate && $endDate) {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+    } else {
+        if ($semester === 1) {
+            // Semester 1: Juli–Desember tahun ini
+            $start = Carbon::create($tahun, 7, 1)->startOfDay();
+            $end = Carbon::create($tahun, 12, 31)->endOfDay();
+        } else {
+            // Semester 2: Januari–Juni tahun berikutnya
+            $start = Carbon::create($tahun + 1, 1, 1)->startOfDay();
+            $end = Carbon::create($tahun + 1, 6, 30)->endOfDay();
+        }
+    }
+    break;
+
+            default:
+                $start = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+                $end = Carbon::create($tahun, $bulan, 1)->endOfMonth();
+                break;
         }
 
-        if ($range === "semester") {
-            if ($semester === 1) {
-                $start = Carbon::create($tahun, 1, 1)->startOfDay();
-                $end = Carbon::create($tahun, 6, 30)->endOfDay();
-            } else {
-                $start = Carbon::create($tahun, 7, 1)->startOfDay();
-                $end = Carbon::create($tahun, 12, 31)->endOfDay();
-            }
-            $query->whereBetween('tanggal', [$start, $end]);
-        } elseif ($range === "monthly" || $range === "rekap") {
-            $query->whereMonth('tanggal', $bulan)->whereYear('tanggal', $tahun);
-        } elseif ($range === "daily") {
-            $query->whereDate('tanggal', Carbon::today());
-        } elseif ($range === "weekly") {
-            $query->whereBetween('tanggal', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
-        } elseif ($range === "custom") {
-            $start = $request->query('start');
-            $end = $request->query('end');
-            if ($start && $end) {
-                $query->whereBetween('tanggal', [$start, $end]);
-            }
-        }
+        $query = KehadiranEskul::with(['user.murid.kelas', 'absensi.eskul'])
+            ->whereBetween('tanggal', [$start, $end]);
 
-        $items = $query->get();
+        if ($eskulId) $query->whereHas('absensi', fn($q) => $q->where('eskul_id', $eskulId));
 
-        // map to expected shape
-        $data = $items->map(function ($item) {
+        $data = $query->get()->groupBy('user_id')->map(function ($items, $idx) {
+            $user = $items->first()->user;
+            $murid = $user->murid;
+            $hadir = $items->where('status', 'Hadir')->count();
+
             return [
-                'nama' => $item->user->name ?? '-',
-                'keterangan' => $item->absensi->eskul->nama ?? '-',
-                'hadir' => $item->status === 'Hadir' ? 1 : 0,
-                'tidak_hadir' => $item->status === 'Tidak Hadir' ? 1 : 0,
-                'terlambat' => $item->status === 'Terlambat' ? 1 : 0,
+                'no' => $idx + 1,
+                'nama' => $user->name ?? '-',
+                'kelas' => $murid->kelas->name ?? '-',
+                'keahlian' => $murid->kelas->kejuruan ?? $murid->keahlian ?? '-',
+                'hadir_sekolah' => 0,
+                'hadir_ekskul' => $hadir,
+                'hadir_event' => 0,
+                'total' => $hadir,
+                'keterangan' => $hadir > 0 ? 'Baik' : 'Belum Hadir',
             ];
-        });
+        })->values();
 
-        return response()->json($data);
+        return response()->json([
+            'range' => $range,
+            'periode' => [
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+            ],
+            'data' => $data->toArray(),
+        ]);
     }
 
     public function event(Request $request)
     {
-        $range = $request->query('range', 'monthly');
+        $range = $request->query('range', 'bulanan');
         $eventId = $request->query('event_id', null);
         $bulan = (int) $request->query('bulan', Carbon::now()->month);
         $tahun = (int) $request->query('tahun', Carbon::now()->year);
         $semester = (int) $request->query('semester', 1);
 
-        $query = EventKehadiran::with(['murid', 'event']);
+        $now = Carbon::now('Asia/Jakarta');
 
-        if ($eventId) {
-            $query->where('event_id', $eventId);
+        switch ($range) {
+            case 'mingguan':
+                $startDate = $request->query('start_date');
+                $endDate = $request->query('end_date');
+                if ($startDate && $endDate) {
+                    $start = Carbon::parse($startDate)->startOfDay();
+                    $end = Carbon::parse($endDate)->endOfDay();
+                } else {
+                    $start = $now->copy()->startOfWeek(Carbon::MONDAY);
+                    $end = $now->copy()->startOfWeek(Carbon::MONDAY)->addDays(4)->endOfDay();
+                }
+                break;
+
+           case 'semester':
+    $startDate = $request->query('start_date');
+    $endDate = $request->query('end_date');
+
+    if ($startDate && $endDate) {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+    } else {
+        if ($semester === 1) {
+            // Semester 1: Juli–Desember tahun ini
+            $start = Carbon::create($tahun, 7, 1)->startOfDay();
+            $end = Carbon::create($tahun, 12, 31)->endOfDay();
+        } else {
+            // Semester 2: Januari–Juni tahun berikutnya
+            $start = Carbon::create($tahun + 1, 1, 1)->startOfDay();
+            $end = Carbon::create($tahun + 1, 6, 30)->endOfDay();
+        }
+    }
+    break;
+
+            default:
+                $start = Carbon::create($tahun, $bulan, 1)->startOfMonth();
+                $end = Carbon::create($tahun, $bulan, 1)->endOfMonth();
+                break;
         }
 
-        if ($range === "semester") {
-            if ($semester === 1) {
-                $start = Carbon::create($tahun, 1, 1)->startOfDay();
-                $end = Carbon::create($tahun, 6, 30)->endOfDay();
-            } else {
-                $start = Carbon::create($tahun, 7, 1)->startOfDay();
-                $end = Carbon::create($tahun, 12, 31)->endOfDay();
-            }
-            $query->whereBetween('attended_at', [$start, $end]);
-        } elseif ($range === "monthly" || $range === "rekap") {
-            $query->whereMonth('attended_at', $bulan)->whereYear('attended_at', $tahun);
-        } elseif ($range === "daily") {
-            $query->whereDate('attended_at', Carbon::today());
-        } elseif ($range === "weekly") {
-            $query->whereBetween('attended_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
-        } elseif ($range === "custom") {
-            $start = $request->query('start');
-            $end = $request->query('end');
-            if ($start && $end) {
-                $query->whereBetween('attended_at', [$start, $end]);
-            }
-        }
+        $query = EventKehadiran::with(['murid.kelas', 'event'])
+            ->whereBetween('attended_at', [$start, $end]);
+        if ($eventId) $query->where('event_id', $eventId);
 
-        $data = $query->get()->groupBy('murid_id')->map(function ($items) {
+        $data = $query->get()->groupBy('murid_id')->map(function ($items, $idx) {
             $murid = $items->first()->murid;
-            $event = $items->first()->event;
+            $hadir = $items->count();
+
             return [
+                'no' => $idx + 1,
                 'nama' => $murid->nama ?? '-',
-                'keterangan' => $event->nama ?? '-',
-                'hadir' => $items->count(),
-                'tidak_hadir' => 0,
-                'terlambat' => 0,
+                'kelas' => $murid->kelas->name ?? '-',
+                'keahlian' => $murid->kelas->kejuruan ?? $murid->keahlian ?? '-',
+                'hadir_sekolah' => 0,
+                'hadir_ekskul' => 0,
+                'hadir_event' => $hadir,
+                'total' => $hadir,
+                'keterangan' => $hadir > 0 ? 'Baik' : 'Belum Hadir',
             ];
         })->values();
 
-        return response()->json($data);
+        return response()->json([
+            'range' => $range,
+            'periode' => [
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+            ],
+            'data' => $data->toArray(),
+        ]);
     }
 
-    /**
-     * export route:
-     * GET /api/laporan/{type}/export?format=pdf|excel&range=...&bulan=...&tahun=...
-     */
     public function export(Request $request, $type)
     {
         $format = $request->query('format', 'pdf');
 
-        // call underlying generator method and get data array
         if ($type === "sekolah") {
             $response = $this->sekolah($request);
-            $data = $response instanceof \Illuminate\Http\JsonResponse ? $response->getData(true) : [];
         } elseif ($type === "eskul") {
             $response = $this->eskul($request);
-            $data = $response instanceof \Illuminate\Http\JsonResponse ? $response->getData(true) : [];
         } else {
             $response = $this->event($request);
-            $data = $response instanceof \Illuminate\Http\JsonResponse ? $response->getData(true) : [];
         }
 
-        // kalau format excel -> gunakan ArrayExport
+        $data = $response instanceof \Illuminate\Http\JsonResponse ? $response->getData(true)['data'] : [];
+
         if ($format === "excel") {
             return Excel::download(new ArrayExport($data), "laporan_{$type}.xlsx");
         }
 
-        // default PDF
-        // pastikan kamu punya view 'laporan.template' atau ubah sesuai view yang ada
-        $pdf = Pdf::loadView('laporan.template', ['data' => $data, 'type' => $type]);
+        $pdf = Pdf::loadView('laporan.template', [
+            'data' => $data,
+            'type' => $type
+        ]);
+
         return $pdf->download("laporan_{$type}.pdf");
     }
 }

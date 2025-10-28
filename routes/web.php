@@ -71,7 +71,7 @@ Route::get('/coba', function () {
     return Inertia::render('PageCoba');
 })->name('coba');
 
-Route::middleware(['auth:sanctum', 'verified'])->group(function () {
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/Admin/Dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
     Route::get('/Admin/Dashboard/rekap/{mode}', [DashboardController::class, 'rekap']);
     Route::get('/Admin/Dashboard/report/{mode}', [DashboardController::class, 'report']);

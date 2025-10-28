@@ -44,22 +44,22 @@ export default function UserManagement() {
       <Head title="User Management" />
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-56 bg-white h-screen p-4 shadow-sm border-r border-gray-200">
+        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
           <nav className="space-y-2 text-sm">
             <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
             <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white">👥 User Manajemen</div>
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--user-settings-lineW.svg" alt="" /> User Manajemen</div>
             <div onClick={() => (window.location.href = '/admin/events')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
             <div onClick={() => (window.location.href = '/admin/eskul')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">⚽ Ekstrakurikuler</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
             <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📈 Riwayat Kehadiran</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
             <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📊 Statistik Kehadiran</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
             <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer">📄 Laporan</div>
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
           </nav>
         </aside>
 
@@ -81,14 +81,14 @@ export default function UserManagement() {
                   placeholder="cari nama"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="border rounded-lg px-3 py-2 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#CBB2F5]"
+                  className="border rounded-lg px-3 py-2 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#8B23ED]"
                 />
               </div>
 
               <select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#CBB2F5]"
+                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B23ED]"
               >
                 <option value="all">Filter Roles</option>
                 <option value="murid">Murid</option>
@@ -102,16 +102,16 @@ export default function UserManagement() {
           </div>
 
           {/* Table */}
-          <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white">
+          <div className="overflow-hidden rounded-xl border border-[#8B23ED] bg-white">
             <table className="min-w-full text-sm">
-              <thead className="bg-[#F4EAFF]">
+              <thead className="bg-[#D9B7F9]">
                 <tr className="text-left text-gray-700 font-medium">
                   <th className="py-3 px-4">Nama</th>
                   <th className="py-3 px-4">Roles</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Date Added</th>
                   <th className="py-3 px-4">Latest Active</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  <th className="py-3 px-4">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,15 +145,15 @@ export default function UserManagement() {
                       {new Date(u.created_at).toLocaleDateString("id-ID")}
                     </td>
                     <td className="py-3 px-4 text-gray-500">–</td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-none hover:bg-gray-100"
+                            className=" bg-white border-none decoration-none hover:bg-gray-100 items-center "
                           >
-                            ⋮
+                            •••
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

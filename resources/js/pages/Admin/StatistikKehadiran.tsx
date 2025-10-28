@@ -109,37 +109,44 @@ export default function StatistikKehadiran() {
     return d.toLocaleDateString("id-ID", { month: "long", year: "numeric" });
   };
 
+   const CustomLegend = ({ payload }) => (
+    <div
+      className="flex justify-center gap-6 mt-4 font-[Vercetti] text-[14px]"
+      style={{ textAlign: "center" }}
+    >
+      {payload.map((entry: { color: any; value: string | number | bigint | boolean | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | Promise<string | number | bigint | boolean | React.ReactPortal | React.ReactElement<unknown, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | null | undefined> | null | undefined; }, index: any) => (
+        <div key={`item-${index}`} className="flex items-center gap-2">
+          <span
+            className="inline-block w-3.5 h-3.5 rounded-full"
+            style={{ backgroundColor: entry.color }}
+          ></span>
+          <span>{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+
   return (
     <div className="flex text-gray-900">
      {/* Sidebar */}
-                  <aside className="w-56 bg-white h-screen p-4 shadow">
-                    <nav className="space-y-2 text-sm">
-                      <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
-                      <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
-                      <div onClick={() => (window.location.href = '/admin/events')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
-                      <div
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/eskul')}
-                      >
-                        ⚽ Ekstrakurikuler
-                      </div>
-                      <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-                      >📈 Riwayat Kehadiran</div>
-                       <div 
-                        className="p-2 rounded bg-gray-200 font-medium cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-                      >📈 Statistik Kehadiran</div>
-                      <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-                      >📄 Laporan</div>
-                    </nav>
-                  </aside>
+        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
+          <nav className="space-y-2 text-sm">
+            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
+            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/events')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/eskul')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
+            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--pie-chart-2-lineW.svg" alt="" /> Statistik Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
+          </nav>
+        </aside>
 
       {/* Main content */}
       <div className="flex-1 bg-gray-100 min-h-screen p-6">
@@ -282,18 +289,17 @@ export default function StatistikKehadiran() {
           )}
 
           {/* Chart */}
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Hadir" fill="#2563eb" />
-              <Bar dataKey="Tidak Hadir" fill="#ef4444" />
-              <Bar dataKey="Terlambat" fill="#9ca3af" />
-            </BarChart>
-          </ResponsiveContainer>
+           <ResponsiveContainer width="100%" height={280}>
+                <BarChart data={chartData}>
+                  <XAxis dataKey="name" interval={0} />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend content={<CustomLegend payload={undefined} />} />
+                  <Bar dataKey="Hadir" fill="#7C3AED" className="rounded-full" />
+                  <Bar dataKey="Tidak Hadir" fill="#C084FC" className="rounded-full border" />
+                  <Bar dataKey="Terlambat" fill="#D6BCFA" className="rounded-full border" />
+                </BarChart>
+              </ResponsiveContainer>
         </div>
       </div>
     </div>

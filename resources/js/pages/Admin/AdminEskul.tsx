@@ -35,8 +35,10 @@ interface PageProps {
   eskuls: Eskul[];
   filters: { search: string };
 }
-
+type Props = any;
 export default function AdminEskul() {
+  const { props } = usePage<Props>();
+ 
   const { eskuls, filters } = usePage<PageProps>().props;
   const [search, setSearch] = useState(filters.search || "");
   const [showCreate, setShowCreate] = useState(false);
@@ -113,79 +115,45 @@ export default function AdminEskul() {
       <Head title="Ekstrakurikuler" />
       <div className="flex">
         {/* Sidebar */}
-        <aside className="w-56 bg-white h-screen p-4 shadow">
+        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
           <nav className="space-y-2 text-sm">
-            <div
-              onClick={() => (window.location.href = "/Admin/Dashboard")}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-            >
-              🏠 Dashboard
-            </div>
-            <div
-              onClick={() => (window.location.href = "/Admin/UserManagement")}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-            >
-              👥 User Manajemen
-            </div>
-            <div
-              onClick={() => (window.location.href = "/admin/events")}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-            >
-              📅 Event Manajemen
-            </div>
-            <div
-              className="p-2 rounded bg-gray-200 font-medium cursor-pointer"
-              onClick={() => (window.location.href = "/admin/eskul")}
-            >
-              ⚽ Ekstrakurikuler
-            </div>
-            <div
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-              onClick={() =>
-                (window.location.href = "/admin/riwayat-kehadiran")
-              }
-            >
-              📈 Riwayat Kehadiran
-            </div>
-            <div
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-              onClick={() =>
-                (window.location.href = "/admin/statistik-kehadiran")
-              }
-            >
-              📊 Statistik Kehadiran
-            </div>
-            <div
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-              onClick={() => (window.location.href = "/admin/laporan-kehadiran")}
-            >
-              📄 Laporan
-            </div>
+            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
+            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/events')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/eskul')}
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--user-community-lineW.svg" alt="" /> Ekstrakurikuler</div>
+            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
           </nav>
         </aside>
 
         {/* Main Content */}
         <main className="flex-1 p-6">
-          <div className="flex justify-between items-center">
+          {/* Header */}
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
             <h1 className="text-2xl font-bold">Ekstrakurikuler</h1>
-            <div className="border rounded-lg  flex justify-between p-1 w-69">
-              <div className="flex">
-              <div className="w-13 h-13 rounded-full overflow-hidden shadow">
-                <img
-                  src={user?.avatar || '/default-avatar.png'}
-                  alt="Foto Profil"
-                  className="w-full h-full object-cover"
-                />
+            <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
+              <div className="flex items-center gap-2 p-2">
+                <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
               </div>
-              <h2 className="text-[18px] font-semibold text-gray-600 mt-3 ml-2">{user?.name || 'Adminn'}</h2>
+              <div>
+              <button className="p-2 rounded bg-white">⚙️</button>
+              <button className="p-2 rounded bg-white">🔓</button>
               </div>
-              <div className="flex mt-4 ">
-                <div className="">🦾</div>
-                <div className="">🦾</div>
-              </div>
+              
             </div>
           </div>
-          <div className="flex justify-between items-center mb-2 mt-20">
+          <div className="flex justify-between items-center">
+          </div>
+          <div className="flex justify-between items-center mb-2 mt-10">
             <p className="text-sm text-gray-600">
               Semua Ekstrakurikuler : {eskuls.length}
             </p>

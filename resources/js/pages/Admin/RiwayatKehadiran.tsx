@@ -83,34 +83,24 @@ const RiwayatKehadiran: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F7F7F7] text-gray-900 flex">
       {/* Sidebar */}
-                  <aside className="w-56 bg-white h-screen p-4 shadow">
-                    <nav className="space-y-2 text-sm">
-                      <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">🏠 Dashboard</div>
-                      <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">👥 User Manajemen</div>
-                      <div onClick={() => (window.location.href = '/admin/events')}
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer">📅 Event Manajemen</div>
-                      <div
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/eskul')}
-                      >
-                        ⚽ Ekstrakurikuler
-                      </div>
-                      <div 
-                        className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white"
-                        onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-                      >📈 Riwayat Kehadiran</div>
-                       <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-                      >📈 Statistik Kehadiran</div>
-                      <div 
-                        className="p-2 rounded hover:bg-gray-200 cursor-pointer"
-                        onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-                      >📄 Laporan</div>
-                    </nav>
-                  </aside>
+        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
+          <nav className="space-y-2 text-sm">
+            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
+            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/events')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/eskul')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
+            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--history-lineW.svg" alt="" /> Riwayat Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
+          </nav>
+        </aside>
 
 
       {/* Main content */}
@@ -118,23 +108,24 @@ const RiwayatKehadiran: React.FC = () => {
         <h1 className="text-2xl font-bold mb-8">Riwayat Kehadiran</h1>
 
         <div className="bg-white rounded-2xl shadow border border-[#C9A2FF] p-6">
-          <h2 className="text-lg font-semibold mb-6">Rekap Kehadiran Siswa</h2>
+          <h2 className="text-lg font-semibold mb-3">Rekap Kehadiran Siswa</h2>
+            <span className="flex items-center gap-2 mb-3">
+                <Filter size={16} /> Filter
+            </span>
 
           {/* Filter section */}
           <div className="flex flex-wrap items-center justify-between mb-6">
             {/* Tombol filter kiri */}
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 bg-[#7B4EFF] text-white px-4 py-2 rounded-lg hover:bg-[#6939da]">
-                <Filter size={16} /> Filter
-              </button>
+              
 
               {/* Tombol Bulanan */}
               <button
                 onClick={() => setFilter("bulan")}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   filter === "bulan"
-                    ? "bg-[#7B4EFF] text-white"
-                    : "bg-white text-[#7B4EFF] border border-[#7B4EFF]"
+                    ? "bg-[#8B23ED] text-white border-2 border-[#8B23ED]"
+                    : "bg-white text-[#8B23ED] border-2 border-[#8B23ED]"
                 }`}
               >
                 Bulanan
@@ -145,8 +136,8 @@ const RiwayatKehadiran: React.FC = () => {
                 onClick={() => setFilter("semester")}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   filter === "semester"
-                    ? "bg-[#7B4EFF] text-white"
-                    : "bg-white text-[#7B4EFF] border border-[#7B4EFF]"
+                    ? "bg-[#8B23ED] text-white border-2 border-[#8B23ED]"
+                    : "bg-white text-[#8B23ED] border-2 border-[#8B23ED] "
                 }`}
               >
                 Semester
@@ -158,20 +149,20 @@ const RiwayatKehadiran: React.FC = () => {
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value as "sekolah" | "eskul")}
-                className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C9A2FF]"
+                className="border-2 border-[#8B23ED] rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#8B23ED]"
               >
                 <option value="sekolah">Rekapan Sekolah</option>
                 <option value="eskul">Rekapan Eskul</option>
               </select>
 
-              <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2">
-                <Search size={16} className="text-gray-400" />
+              <div className="flex items-center border border-[#8B23ED] rounded-lg px-3 py-2">
+                <Search size={16} className="text-gray-900" />
                 <input
                   type="text"
                   placeholder="Cari siswa"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="ml-2 outline-none text-sm w-40"
+                  className="ml-2 outline-none text-sm w-40 text-gray-900"
                 />
               </div>
             </div>
@@ -179,7 +170,7 @@ const RiwayatKehadiran: React.FC = () => {
 
           {/* Navigasi Bulanan / Semester */}
           {filter === "bulan" ? (
-            <div className="flex items-center gap-3 mb-6 text-gray-700">
+            <div className="flex items-center gap-3 mb-6 text-gray-700 ml-2">
               <button
                 onClick={() => setBulan(bulan === 1 ? 12 : bulan - 1)}
                 className="hover:text-[#7B4EFF]"

@@ -11,6 +11,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
+import React from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface EventDetail {
   id: number;
@@ -43,11 +45,16 @@ interface PageProps {
   registrations: Registration[];
   attendances: Attendance[];
 }
+type Props = any;
 
 export default function AdminEventDetail() {
+  const { props } = usePage<Props>();
+  const { user } = props;
   const { auth, event, registrations, attendances } = usePage<PageProps>().props;
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState<"registrations" | "attendances">("registrations");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
   const [query, setQuery] = useState("");
 
   const { data, setData, processing } = useForm({
@@ -117,20 +124,76 @@ export default function AdminEventDetail() {
     event.image_url ||
     (event.image ? `/storage/${event.image}` : "");
 
+  const dataToShow =
+    activeTab === "registrations"
+      ? filteredRegs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+      : filteredAtts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const totalPages = Math.ceil(
+    (activeTab === "registrations" ? filteredRegs.length : filteredAtts.length) / itemsPerPage
+  );
+
+  const pagesToShow = Array.from({ length: totalPages }, (_, i) => i + 1).filter(
+    (p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2
+  );
+
+  const paginatedData = React.useMemo(() => {
+  const startIdx = (currentPage - 1) * itemsPerPage;
+  return filteredData.slice(startIdx, startIdx + itemsPerPage);
+}, [filteredData, currentPage, itemsPerPage]);
+
   return (
     <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl">Detail Event</h2>}>
       <Head title={`Detail Event - ${event.title}`} />
 
-      <div className="py-8 max-w-6xl mx-auto sm:px-6 lg:px-8 space-y-6 text-gray-900">
+      <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
+        <div className="flex flex-1">
+        {/* Sidebar */}
+        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
+          <nav className="space-y-2 text-sm">
+            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
+              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--dashboard-lineW.svg" alt="" />Dashboard</div>
+            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/events')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
+            <div onClick={() => (window.location.href = '/admin/eskul')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
+            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
+            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
+              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
+          </nav>
+        </aside>
         {/* ======= Event Card ======= */}
-        <div className="bg-white border rounded-lg shadow-sm overflow-hidden">
-          <div className="w-full aspect-[16/9] overflow-hidden bg-gray-100">
-            <img
-  src={event.image_url}
-  alt={event.title}
-  className="w-full h-48 object-cover rounded-xl"
-/>
+        <main className="flex-1 overflow-x-auto p-7 pt-3">
+           {/* Header */}
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
+            <h1 className="text-2xl font-bold">Dashboard</h1>
+            <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
+              <div className="flex items-center gap-2 p-2">
+                <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
+              </div>
+              <div>
+              <button className="p-2 rounded bg-white">⚙️</button>
+              <button className="p-2 rounded bg-white">🔓</button>
+              </div>
+              
+            </div>
+          </div>
 
+          
+        <div className="bg-white border border-[#8B23ED] rounded-lg shadow-sm overflow-hidden">
+          
+          <div className="max-w-380 w-1000 h-100 aspect-[16/9] overflow bg-gray-100 m-3">
+            <img
+              src={event.image_url}
+              alt={event.title}
+              className="w-full h-full object-cover rounded-xl"
+            />
           </div>
 
           <div className="p-6">
@@ -155,26 +218,36 @@ export default function AdminEventDetail() {
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
-              <Button variant={"outline"} onClick={() => router.get(route("admin.events.manage"))}>
+              <Button 
+              className="text-sm bg-white text-gray-900 border border-[#8B23ED] px-3 py-2 mr-2 rounded-lg w-30 hover:border-[#8B23ED] hover:bg-white hover:text-gray-900 hover:bg-gray-200" 
+              variant={"outline"} 
+              onClick={() => router.get(route("admin.events.manage"))}>
                 Kembali
               </Button>
-              <Button onClick={() => setShowModal(true)}>Edit</Button>
+              <Button 
+              onClick={() => setShowModal(true)} 
+              className="text-sm bg-[#8B23ED] text-white px-3 py-2 mr-2 rounded-lg w-30 hover:bg-[#8B23ED] hover:text-white hover:bg-purple-700">
+                Edit
+              </Button>
             </div>
           </div>
         </div>
+        
 
         {/* ======= Tabs ======= */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between mt-15 mb-5">
           <div className="flex gap-2">
             <Button
-              variant={activeTab === "registrations" ? "default" : "ghost"}
+              variant={activeTab === "registrations" ? "purple" : "pending"}
               onClick={() => setActiveTab("registrations")}
+              className="border border-[#8B23ED]"
             >
               Pendaftaran
             </Button>
             <Button
-              variant={activeTab === "attendances" ? "default" : "ghost"}
+              variant={activeTab === "attendances" ? "purple" : "pending"}
               onClick={() => setActiveTab("attendances")}
+              className="border border-[#8B23ED]"
             >
               Kehadiran
             </Button>
@@ -185,12 +258,13 @@ export default function AdminEventDetail() {
               placeholder="Cari nama peserta"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              className="border border-[#8B23ED]"
             />
           </div>
         </div>
 
         {/* ======= Table ======= */}
-        <div className="bg-white border rounded-lg shadow-sm p-4">
+        <div className="bg-white border  border-[#8B23ED] rounded-lg shadow-sm p-4">
           {activeTab === "registrations" ? (
             <table className="min-w-full text-sm">
               <thead>
@@ -205,7 +279,9 @@ export default function AdminEventDetail() {
               <tbody>
                 {filteredRegs.map((r, idx) => (
                   <tr key={r.id} className="border-t">
-                    <td className="py-3 px-3 text-gray-600">{idx + 1}</td>
+                    <td className="py-3 px-3 text-gray-600">
+                      {(currentPage - 1) * itemsPerPage + idx + 1}
+                    </td>
                     <td className="py-3 px-3">{r.user.name}</td>
                     <td className="py-3 px-3">{r.user.kelas?.name || "-"}</td>
                     <td className="py-3 px-3">{r.sport_category || "-"}</td>
@@ -227,7 +303,9 @@ export default function AdminEventDetail() {
               <tbody>
                 {filteredAtts.map((a, idx) => (
                   <tr key={a.id} className="border-t">
-                    <td className="py-3 px-3 text-gray-600">{idx + 1}</td>
+                   <td className="py-3 px-3 text-gray-600">
+                      {(currentPage - 1) * itemsPerPage + idx + 1}
+                    </td>
                     <td className="py-3 px-3">{a.user.name}</td>
                     <td className="py-3 px-3">{a.user.kelas?.name || "-"}</td>
                     <td className="py-3 px-3">{a.status}</td>
@@ -236,7 +314,64 @@ export default function AdminEventDetail() {
               </tbody>
             </table>
           )}
+          
         </div>
+
+        {/* Pagination Control */}
+<div className="flex justify-between mt-4">
+  {/* Kiri: optional tombol download / info */}
+  <div />
+
+  {/* Kanan: Pagination (selalu tampil) */}
+  <div className="flex items-center gap-1 border rounded-full px-3 py-1 bg-white shadow-sm">
+    <button
+      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+      disabled={currentPage === 1}
+      className="p-1 text-gray-600 hover:bg-gray-100 rounded-full disabled:opacity-40"
+    >
+      
+    </button>
+
+    {Array.from({ length: totalPages || 1 }, (_, i) => i + 1)
+      .filter((page) => {
+        if (page === 1 || page === (totalPages || 1)) return true;
+        if (page >= currentPage - 2 && page <= currentPage + 2) return true;
+        return false;
+      })
+      .map((page, idx, arr) => {
+        const prev = arr[idx - 1];
+        const showDots = prev && page - prev > 1;
+        return (
+          <React.Fragment key={page}>
+            {showDots && <span className="px-2 text-gray-400">…</span>}
+            <button
+              onClick={() => setCurrentPage(page)}
+              className={`px-3 py-1.5 rounded-full transition-all ${
+                currentPage === page
+                  ? "bg-orange-400 text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              {page}
+            </button>
+          </React.Fragment>
+        );
+      })}
+
+    <button
+      onClick={() => setCurrentPage((p) => Math.min(totalPages || 1, p + 1))}
+      disabled={currentPage === (totalPages || 1)}
+      className="p-1 text-gray-600 hover:bg-gray-100 rounded-full disabled:opacity-40"
+    >
+      
+    </button>
+  </div>
+</div>
+
+
+        
+
+        
 
         {/* ======= Modal Edit Event ======= */}
         <Dialog open={showModal} onOpenChange={setShowModal}>
@@ -340,6 +475,9 @@ export default function AdminEventDetail() {
             </form>
           </DialogContent>
         </Dialog>
+        
+        </main>
+      </div>
       </div>
     </AuthenticatedLayout>
   );

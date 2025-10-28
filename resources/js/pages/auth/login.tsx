@@ -51,7 +51,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white rounded-t-lg shadow-md w-full max-w-225 flex-col overflow-hidden">
+      <div className="bg-white rounded-lg shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.38)] w-full max-w-270 flex-col overflow-hidden">
         {/* Bagian atas (gambar) */}
         <div className="flex justify-center bg-white relative">
           <img
@@ -63,7 +63,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
 
         {/* Form dengan wave di belakang tulisan Log In */}
         <form
-          className="relative bg-purple-700 text-white p-6 pt-12 shadow-md w-full flex flex-col justify-center items-center overflow-hidden"
+          className="relative bg-[#640FB4]  text-white p-6 pt-12 shadow-md w-full flex flex-col justify-center items-center overflow-hidden"
           onSubmit={submit}
         >
           {/* SVG wave di belakang tulisan */}
@@ -82,7 +82,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
           
 
           {/* Form content */}
-          <div className="relative z-10 grid gap-6 w-full justify-center">
+          <div className="relative z-10 grid gap-6 w-full justify-center " >
             <h2 className="relative text-[36px] font-semibold mb-0 z-10 text-left">Log In</h2>
             {/* Email */}
             <div className="grid gap-2 w-80">

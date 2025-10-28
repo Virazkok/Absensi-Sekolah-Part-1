@@ -49,52 +49,73 @@ public function update(Request $request, $id)
 {
     $user = User::with('murid')->findOrFail($id);
 
-    $request->validate([
-        'nis' => 'nullable|integer|max:50',
-        'name' => 'required|string|max:255',
-        'email' => 'required|email|unique:users,email,' . $user->id,
-        'username' => 'nullable|string|unique:users,username,' . $user->id,
-        'kelas_id' => 'nullable|exists:kelas,id',
-        'role' => 'required|string',
-        'status' => 'nullable|string',
-        'password' => 'nullable|min:6',
-        'avatar' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-        'eskul_ids' => 'array',
-    ]);
+    // 💡 Tentukan mode berdasarkan field yang dikirim
+    $isBiodataUpdate = $request->has('kelas_id') && !$request->has('email');
 
-    // isi field user, kecuali nis & avatar
-    $user->fill($request->except('password','avatar','eskul_ids','nis'));
+    if ($isBiodataUpdate) {
+        // === UPDATE BIODATA ===
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'nis' => 'required|string|max:50',
+            'kelas_id' => 'required|exists:kelas,id',
+            'kejuruan' => 'nullable|string|max:255',
+        ]);
 
-    if ($request->filled('password')) {
-        $user->password = Hash::make($request->password);
-    }
+        // Update data di tabel murid
+        if ($user->murid) {
+            $user->murid->update([
+                'nama' => $request->name,
+                'nis' => $request->nis,
+                'kelas_id' => $request->kelas_id,
+                'keahlian' => $request->kejuruan,
+            ]);
+        }
 
-    // handle avatar
-    if ($request->hasFile('avatar')) {
-        $image = $request->file('avatar');
-        $base64 = 'data:image/' . $image->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($image));
-        $user->avatar = $base64;
-    }
-
-    $user->save();
-
-    // update nis di tabel murid
-    if ($user->murid) {
-        $user->murid->update([
-            'nis' => $request->nis,
-            'nama' => $request->name,
+        // Sinkron juga sebagian field user
+        $user->update([
+            'name' => $request->name,
             'kelas_id' => $request->kelas_id,
         ]);
-    }
+    } else {
+        // === UPDATE AKUN ===
+$request->validate([
+    'email' => 'required|email|unique:users,email,' . $user->id,
+    'role' => 'required|string',
+    'status' => 'nullable|string',
+    'password' => 'nullable|min:6|confirmed',
+    'eskul_ids' => 'array|nullable|max:3', // 👈 maksimal 3 eskul
+    'eskul_ids.*' => 'integer|exists:eskuls,id',
+]);
 
-    // sinkronisasi eskul
-    if ($request->has('eskul_ids')) {
-        $user->eskuls()->sync($request->eskul_ids);
-    }
+$user->fill($request->only('email', 'role', 'status'));
 
-    return redirect()->route('admin.user.detail', $user->id)
-        ->with('success', 'User updated successfully');
+// jika password dikirim
+if ($request->filled('password')) {
+    $user->password = Hash::make($request->password);
 }
+
+// handle eskul (maksimal 3)
+if ($request->has('eskul_ids')) {
+    $eskulIds = array_pad($request->eskul_ids, 3, null); // isi kekurangan jadi null
+    $user->eskul_siswa1_id = $eskulIds[0];
+    $user->eskul_siswa2_id = $eskulIds[1];
+    $user->eskul_siswa3_id = $eskulIds[2];
+}
+
+$user->save();
+
+
+        // sinkronisasi eskul
+        if ($request->has('eskul_ids')) {
+            $user->eskuls()->sync($request->eskul_ids);
+        }
+    }
+
+    return redirect()
+        ->route('admin.user.detail', $user->id)
+        ->with('success', 'Data user berhasil diperbarui.');
+}
+
 
 
 public function destroy($id)

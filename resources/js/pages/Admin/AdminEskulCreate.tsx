@@ -39,7 +39,7 @@ export default function CreateEskulModal({ onClose }: any) {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-      <div className="bg-white border-2 border-purple-400 rounded-2xl shadow-xl w-full max-w-lg p-8">
+      <div className="bg-white  rounded-2xl shadow-xl w-full max-w-lg p-8">
         <h2 className="text-lg font-bold mb-4">Create Ekstrakurikuler</h2>
         <form onSubmit={submit} className="space-y-4">
           <div>

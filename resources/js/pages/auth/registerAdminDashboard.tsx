@@ -24,6 +24,7 @@ type RegisterForm = {
   name: string;
   email: string;
   password: string;
+  password_confirmation: string;
   kelas_id: string;
   nis: string;
   keahlian: string;
@@ -31,7 +32,6 @@ type RegisterForm = {
   eskul_siswa1_id: string;
   eskul_siswa2_id: string;
   eskul_siswa3_id: string;
-  status: string;
 };
 
 interface Kelas {
@@ -44,7 +44,7 @@ interface Eskul {
   nama: string;
 }
 
-export default function CreateUserModal() {
+export default function CreateUserModalAdmin() {
   const [open, setOpen] = useState(false);
   const [kelasList, setKelasList] = useState<Kelas[]>([]);
   const [eskulOptions, setEskulOptions] = useState<Eskul[]>([]);
@@ -54,7 +54,7 @@ export default function CreateUserModal() {
     name: "",
     email: "",
     password: "",
-    
+    password_confirmation: "",
     kelas_id: "",
     nis: "",
     keahlian: "",
@@ -62,7 +62,6 @@ export default function CreateUserModal() {
     eskul_siswa1_id: "",
     eskul_siswa2_id: "",
     eskul_siswa3_id: "",
-    status: "",
   });
 
   useEffect(() => {
@@ -91,9 +90,9 @@ export default function CreateUserModal() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#E4D2FC] hover:bg-[#D7BFFD] text-black font-medium px-4 py-2 rounded-lg">
-          Tambah User
-        </Button>
+        <Button className="text-sm bg-[#8B23ED] text-white px-3 py-1 rounded mr-2 hover:text-sm bg-[#8B23ED]">
+            Tambah
+        </Button>      
       </DialogTrigger>
 
      <DialogContent
@@ -129,7 +128,38 @@ export default function CreateUserModal() {
             <InputError message={errors.nis} />
           </div>
 
-           {/* Kelas */}
+          {/* Email */}
+          <div className="grid gap-2">
+            <Label>Email</Label>
+            <Input
+              type="email"
+              value={data.email}
+              onChange={(e) => setData("email", e.target.value)}
+              placeholder="email@example.com"
+            />
+            <InputError message={errors.email} />
+          </div>
+
+          {/* Role */}
+          <div className="grid gap-2">
+            <Label>Role</Label>
+            <Select
+              value={data.role}
+              onValueChange={(v) => setData("role", v)}
+            >
+              <SelectTrigger className="text-gray-900">
+                <SelectValue placeholder="Pilih role" className="text-gray-900" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="murid">Murid</SelectItem>
+                <SelectItem value="guru">Guru</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+            <InputError message={errors.role} />
+          </div>
+
+          {/* Kelas */}
           <div className="grid gap-2">
             <Label>Kelas</Label>
             <Select
@@ -151,7 +181,6 @@ export default function CreateUserModal() {
             <InputError message={errors.kelas_id} />
           </div>
 
-          
           {/* Keahlian */}
           <div className="grid gap-2">
             <Label>Keahlian</Label>
@@ -162,22 +191,10 @@ export default function CreateUserModal() {
             />
             <InputError message={errors.keahlian} />
           </div>
-          
-          
-         
-        {/* Email */}
-          <div className="grid gap-2">
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={data.email}
-              onChange={(e) => setData("email", e.target.value)}
-              placeholder="email@example.com"
-            />
-            <InputError message={errors.email} />
-          </div>
 
-             {/* Password */}
+         
+
+          {/* Password */}
           <div className="grid gap-2">
             <Label>Password</Label>
             <Input
@@ -188,44 +205,20 @@ export default function CreateUserModal() {
             />
             <InputError message={errors.password} />
           </div>
-      
-           
-         
-           {/* Status */}
-          <div className="grid gap-2">
-            <Label>Status</Label>
-            <Select
-              value={data.status}
-              onValueChange={(s) => setData("status", s)}
-            >
-              <SelectTrigger className="text-gray-900">
-                <SelectValue placeholder="Aktif" className="text-gray-900" />
-              </SelectTrigger>
-              
-            </Select>
-            <InputError message={errors.status} />
-          </div>
 
-         {/* Role */}
+          {/* Konfirmasi Password */}
           <div className="grid gap-2">
-            <Label>Role</Label>
-            <Select
-              value={data.role}
-              onValueChange={(v) => setData("role", v)}
-            >
-              <SelectTrigger className="text-gray-900">
-                <SelectValue placeholder="Pilih role" className="text-gray-900" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="murid">Murid</SelectItem>
-                <SelectItem value="guru">Guru</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
-              </SelectContent>
-            </Select>
-            <InputError message={errors.role} />
+            <Label>Konfirmasi Password</Label>
+            <Input
+              type="password"
+              value={data.password_confirmation}
+              onChange={(e) =>
+                setData("password_confirmation", e.target.value)
+              }
+              placeholder="Ulangi password"
+            />
+            <InputError message={errors.password_confirmation} />
           </div>
-
-         
 
           {/* Tombol */}
           <div className="col-span-2 flex justify-center mt-8 gap-4">
