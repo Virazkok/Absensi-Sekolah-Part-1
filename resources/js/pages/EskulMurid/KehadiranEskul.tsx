@@ -40,25 +40,44 @@ export default function KehadiranEskul() {
 
   const [image, setImage] = useState<string | null>(null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
+  const [fotoBase64, setFotoBase64] = useState<string | null>(null);
   const [processing, setProcessing] = useState(false);
 
   // Deteksi perangkat mobile
   const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+  // ✅ Fungsi ubah file ke base64
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
+
   // ✅ Fungsi ambil foto
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setFotoFile(file);
     if (file) {
+      setFotoFile(file);
       setImage(URL.createObjectURL(file));
+
+      try {
+        const base64 = await fileToBase64(file);
+        setFotoBase64(base64);
+      } catch (err) {
+        console.error("Gagal konversi foto ke base64:", err);
+      }
     } else {
+      setFotoFile(null);
+      setFotoBase64(null);
       setImage(null);
     }
   };
 
   // ✅ Fungsi submit Hadir / Tidak Hadir
   const submitKehadiran = async (status: "Hadir" | "Tidak Hadir") => {
-    if (status === "Hadir" && !fotoFile) {
+    if (status === "Hadir" && !fotoFile && !fotoBase64) {
       alert("Harap ambil foto terlebih dahulu sebelum memilih Hadir!");
       return;
     }
@@ -66,20 +85,28 @@ export default function KehadiranEskul() {
     setProcessing(true);
 
     try {
-      const formData = new FormData();
-      formData.append("status", status);
-      if (status === "Hadir" && fotoFile) {
+      // Jika ada file, kirim multipart form
+      if (fotoFile) {
+        const formData = new FormData();
+        formData.append("status", status);
         formData.append("foto", fotoFile);
-      }
 
-      await axios.post(
-        `/murid/eskul/kehadiran/${absensi.id}`,
-        formData,
-        {
+        await axios.post(`/murid/eskul/kehadiran/${absensi.id}`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
           withCredentials: true,
-        }
-      );
+        });
+      } 
+      // Jika hanya base64 (HP upload bermasalah)
+      else if (fotoBase64) {
+        await axios.post(
+          `/murid/eskul/kehadiran/${absensi.id}`,
+          {
+            status,
+            foto: fotoBase64,
+          },
+          { withCredentials: true }
+        );
+      }
 
       alert("Kehadiran berhasil disimpan!");
       window.location.href = "/murid/eskul";
@@ -115,12 +142,13 @@ export default function KehadiranEskul() {
         {kehadiran ? (
           <div className="flex flex-col items-center mt-6">
             {kehadiran.status === "Hadir" && kehadiran.foto && (
-              <img
-                src={`data:image/jpeg;base64,${kehadiran.foto}`}
-                alt="Foto Kehadiran"
-                className="w-[90%] max-w-sm aspect-square object-cover rounded-lg mb-4"
-              />
-            )}
+  <img
+    src={`/storage/${kehadiran.foto}`}
+    alt="Foto Kehadiran"
+    className="w-[90%] max-w-sm aspect-square object-cover rounded-lg mb-4"
+  />
+)}
+
             <div
               className={`px-4 py-2 rounded-xl text-center text-white font-semibold ${
                 kehadiran.status === "Hadir" ? "bg-green-500" : "bg-red-500"
@@ -155,11 +183,9 @@ export default function KehadiranEskul() {
                   capture="environment"
                   onChange={handleImageUpload}
                   className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
-                  disabled={!isMobile}
                 />
               </label>
 
-              {/* Pesan peringatan untuk desktop */}
               {!isMobile && (
                 <p className="text-red-500 text-sm mt-3 text-center px-4">
                   ⚠️ Fitur kamera hanya tersedia di perangkat mobile. <br />
