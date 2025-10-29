@@ -38,29 +38,22 @@ COPY . .
 # Copy hasil build frontend (Vite/React)
 COPY --from=node-builder /app/public ./public
 
-# Install Composer dan dependensi Laravel
+# Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# ✅ Jalankan composer install dan pastikan ekstensi GD sudah aktif
-RUN php -m | grep gd || (echo "❌ GD tidak aktif!" && exit 1)
+# ✅ Install dependensi Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permission dan cache config
+# Set permission untuk storage & cache
 RUN chown -R www-data:www-data storage bootstrap/cache
-RUN php artisan config:cache && php artisan route:cache && php artisan view:cache || true
 
-CMD php artisan optimize:clear && php artisan serve --host=0.0.0.0 --port=80
-
-
-EXPOSE 80
-CMD ["apache2-foreground"]
-
-# Jalankan artisan command saat container start (bukan saat build)
+# ✅ Jalankan artisan commands saat container start, bukan saat build
 CMD php artisan config:clear && \
     php artisan cache:clear && \
     php artisan view:clear && \
     php artisan route:clear && \
     php artisan config:cache && \
+    php artisan migrate --force && \
     apache2-foreground
 
-
+EXPOSE 80
