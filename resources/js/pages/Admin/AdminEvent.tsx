@@ -126,16 +126,16 @@ export default function AdminEvent() {
           </div>
 
           {/* Table */}
-          <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm bg-white">
+          <div className=" rounded-xl bg-white border border-[#8B23ED] rounded-xl">
             <table className="min-w-full text-sm">
-              <thead className="bg-[#EFE6FF] border-b border-[#D9C9FF]">
+              <thead className="border-b">
                 <tr className="text-left text-gray-700 font-medium">
-                  <th className="py-3 px-4 w-16">No</th>
+                  <th className="py-3 px-4 w-60">No</th>
                   <th className="py-3 px-4">Tanggal Awal</th>
-                  <th className="py-3 px-4">Tanggal Akhir</th>
-                  <th className="py-3 px-4">Nama Event</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Aksi</th>
+                  <th className="py-3 px-4 ">Tanggal Akhir</th>
+                  <th className="py-3 px-4 ">Nama Event</th>
+                  <th className="py-3 px-4 ">Status</th>
+                  <th className="py-3 px-4  ">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -147,10 +147,22 @@ export default function AdminEvent() {
                   </tr>
                 )}
                 {filteredEvents.map((event, index) => (
-                  <tr key={event.id} className="border-b hover:bg-[#FAF7FF] transition">
+                  <tr key={event.id} className="border-t hover:bg-[#FAF7FF] transition">
                     <td className="py-3 px-4">{index + 1}</td>
-                    <td className="py-3 px-4">{event.start_date}</td>
-                    <td className="py-3 px-4">{event.end_date}</td>
+                    <td className="py-3 px-4">
+                      {new Date(event.start_date).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="py-3 px-4">
+                      {new Date(event.end_date).toLocaleDateString("id-ID", {
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </td>
                     <td className="py-3 px-4">{event.title}</td>
                     <td className="py-3 px-4">
                       <span
@@ -163,15 +175,15 @@ export default function AdminEvent() {
                         {event.is_published ? "Aktif" : "Tidak Aktif"}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-3">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border-none hover:bg-gray-100"
+                         <Button
+                          variant="outline"
+                          size="sm"
+                          className=" bg-white border-none decoration-none hover:bg-gray-100 items-center "
                           >
-                            ⋮
+                            •••
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

@@ -108,7 +108,7 @@ const HomeSiswa = () => {
     const minute = time.getMinutes();
     const totalMinutes = hour * 60 + minute;
 
-    const startCheckIn = 9 * 60 + 0; 
+    const startCheckIn = 7 * 60 + 0; 
     const endCheckIn = 20 * 60 + 4;
     const startCheckOut = 21 * 60 + 0;
     const endCheckOut = 22 * 60 + 4;

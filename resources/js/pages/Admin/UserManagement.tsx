@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import CreateUserModal from "@/pages/auth/register";
+import { href } from "react-router-dom";
 
 type Props = {
   users: {
@@ -23,11 +24,22 @@ type Props = {
     last_page: number;
     total: number;
   };
+  auth: {
+    user: {
+      id: number;
+      name: string;
+      role: string;
+      avatar?: string;
+    };
+  };
 };
+
+
 
 export default function UserManagement() {
   const { props } = usePage<Props>();
-  const { users } = props;
+  const { users, user } = usePage<Props>().props;
+
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
 
@@ -64,16 +76,26 @@ export default function UserManagement() {
         </aside>
 
         {/* Konten utama */}
-        <main className="flex-1 p-8">
+        <main className="flex-1 p-4 mr-3">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-2xl font-semibold">User Management</h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Semua User <span className="font-semibold">{users.total}</span>
-              </p>
+          <div className="flex flex-wrap justify-between items-center mb-10 gap-3">
+            <h1 className="text-2xl font-bold">User Management</h1>
+            <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
+              <div className="flex items-center gap-2 p-2">
+                <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
+              </div>
+              <div>
+              <button className="p-2 rounded bg-white">⚙️</button>
+              <button className="p-2 rounded bg-white">🔓</button>
+              </div>
+              
             </div>
-
+          </div>
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-sm text-gray-600 mt-1">
+                Semua User <span className="font-semibold text-gray-400">{users.total}</span>
+            </p>
             <div className="flex items-center gap-3">
               <div className="relative">
                 <input
@@ -81,14 +103,14 @@ export default function UserManagement() {
                   placeholder="cari nama"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="border rounded-lg px-3 py-2 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#8B23ED]"
+                  className="border border-[#8B23ED] rounded-lg  px-3 py-2 text-sm w-48 focus:outline-none focus:ring-2 focus:ring-[#8B23ED] shadow-[4.0px_4.0px_8.0px_rgba(0,0,0,0.38)]"
                 />
               </div>
 
               <select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B23ED]"
+                className="border border-[#8B23ED] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#8B23ED] shadow-[4.0px_4.0px_8.0px_rgba(0,0,0,0.38)]"
               >
                 <option value="all">Filter Roles</option>
                 <option value="murid">Murid</option>
@@ -100,13 +122,14 @@ export default function UserManagement() {
               <CreateUserModal />
             </div>
           </div>
+          
 
           {/* Table */}
           <div className="overflow-hidden rounded-xl border border-[#8B23ED] bg-white">
             <table className="min-w-full text-sm">
               <thead className="bg-[#D9B7F9]">
                 <tr className="text-left text-gray-700 font-medium">
-                  <th className="py-3 px-4">Nama</th>
+                  <th className="py-3 px-4 w-75">Nama</th>
                   <th className="py-3 px-4">Roles</th>
                   <th className="py-3 px-4">Status</th>
                   <th className="py-3 px-4">Date Added</th>
