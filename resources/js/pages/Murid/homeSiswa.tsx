@@ -6,7 +6,7 @@ import { Student } from '@/types';
 import { Head } from '@inertiajs/react';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://127.0.0.1:8000';
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || window.location.origin;
 
 const HomeSiswa = () => {
   /* ---------- STATE ---------- */

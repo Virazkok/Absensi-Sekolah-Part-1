@@ -43,7 +43,7 @@ if (token) {
 
 axios.defaults.withCredentials = true;
 axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-axios.defaults.baseURL = 'http://127.0.0.1:8000'; // ← ini penting!
+axios.defaults.baseURL = import.meta.env.VITE_API_URL || window.location.origin;// ← ini penting!
 
 
 
