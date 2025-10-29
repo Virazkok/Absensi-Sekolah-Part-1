@@ -55,10 +55,12 @@ CMD php artisan optimize:clear && php artisan serve --host=0.0.0.0 --port=80
 EXPOSE 80
 CMD ["apache2-foreground"]
 
-# Clear and rebuild Laravel caches
-RUN php artisan config:clear && \
+# Jalankan artisan command saat container start (bukan saat build)
+CMD php artisan config:clear && \
     php artisan cache:clear && \
     php artisan view:clear && \
     php artisan route:clear && \
-    php artisan config:cache
+    php artisan config:cache && \
+    apache2-foreground
+
 
