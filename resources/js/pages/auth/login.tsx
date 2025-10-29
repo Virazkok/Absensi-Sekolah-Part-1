@@ -26,28 +26,10 @@ export default function Login({ status, canResetPassword }: LoginProps) {
     remember: false,
   });
 
-  const submit: FormEventHandler = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.get('/sanctum/csrf-cookie');
-
-      const formData = new FormData();
-      formData.append('email', data.email);
-      formData.append('password', data.password);
-
-      await axios.post('/login', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      const res = await axios.get('/api/student/me');
-      localStorage.setItem('user', JSON.stringify(res.data));
-
-      window.location.href = '/murid/home';
-    } catch (err: any) {
-      console.error('Login gagal', err);
-      alert('Login gagal: ' + err.message);
-    }
-  };
+  const submit: FormEventHandler = (e) => {
+  e.preventDefault();
+  post(route('login'));
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
