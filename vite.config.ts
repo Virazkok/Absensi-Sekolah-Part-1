@@ -31,10 +31,10 @@ export default defineConfig({
       host: '127.0.0.1', // ← pastikan ini IP PC kamu
     },
   },
+  base: '/build/',
   plugins: [
     laravel({
       input: ['resources/css/app.css', 'resources/js/app.tsx'],
-      ssr: 'resources/js/ssr.tsx',
       refresh: true,
     }),
     react(),
