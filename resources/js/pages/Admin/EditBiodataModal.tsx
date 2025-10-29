@@ -16,10 +16,12 @@ export default function EditBiodataModal({ user, kelas, onClose }: any) {
   const { data, setData, post, processing, errors } = useForm({
     _method: "PUT",
     name: user.name || "",
-    nis: user.nis || "",
+    nis: String(user.nis || ""),
     kelas_id: user.kelas_id || "",
     kejuruan: user.kejuruan || "",
   });
+
+  
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +35,7 @@ export default function EditBiodataModal({ user, kelas, onClose }: any) {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-[500px] p-8 overflow-auto max-h-[90vh]">
+      <div className="bg-white rounded-2xl border-2 border-[#8B23ED] shadow-xl w-full max-w-[500px] p-8 overflow-auto max-h-[90vh]">
         <h3 className="text-xl font-semibold mb-4">Edit Biodata</h3>
 
         <form onSubmit={submit} className="flex flex-col gap-4">
@@ -43,7 +45,7 @@ export default function EditBiodataModal({ user, kelas, onClose }: any) {
             <Input
               value={data.name}
               disabled
-              className="bg-gray-100"
+              className="bg-gray-300"
             />
           </div>
 
@@ -53,7 +55,7 @@ export default function EditBiodataModal({ user, kelas, onClose }: any) {
             <Input
               value={data.nis}
               disabled
-              className="bg-gray-100"
+              className="bg-gray-300"
             />
           </div>
 
@@ -87,20 +89,20 @@ export default function EditBiodataModal({ user, kelas, onClose }: any) {
           </div>
 
           {/* Tombol */}
-          <div className="col-span-2 flex justify-center gap-4 mt-6">
+          <div className="col-span-2 flex justify-between gap-3 mt-6">
             <Button
               type="button"
               variant="outline"
               onClick={() => onClose?.()}
               disabled={processing}
-              className="bg-white border border-gray-300 w-40"
+              className="bg-white border border-[#8B23ED] w-65 hover:bg-gray-200 hover:text-black shadow-[4.0px_4.0px_8.0px_rgba(0,0,0,0.38)]"
             >
               Kembali
             </Button>
             <Button
               type="submit"
               disabled={processing}
-              className="bg-[#E4D2FC] hover:bg-[#d6b9f7] text-black w-40"
+              className="bg-[#8B23ED] hover:bg-purple-700 text-white w-65 border border-[#8B23ED] shadow-[4.0px_4.0px_8.0px_rgba(0,0,0,0.38)]"
             >
               {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
               Simpan

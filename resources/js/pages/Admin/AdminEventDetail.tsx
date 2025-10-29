@@ -137,10 +137,7 @@ export default function AdminEventDetail() {
     (p) => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 2
   );
 
-  const paginatedData = React.useMemo(() => {
-  const startIdx = (currentPage - 1) * itemsPerPage;
-  return filteredData.slice(startIdx, startIdx + itemsPerPage);
-}, [filteredData, currentPage, itemsPerPage]);
+ 
 
   return (
     <AuthenticatedLayout user={auth.user} header={<h2 className="font-semibold text-xl">Detail Event</h2>}>

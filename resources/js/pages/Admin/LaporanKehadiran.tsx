@@ -79,7 +79,7 @@ const LaporanKehadiranPage: React.FC = () => {
 
   if (semester === 1) {
     // Semester 1 → Juli–Des tahun ini
-    start = new Date(tahun, 6, 1);  // Juli
+    start = new Date(tahun, 6, 2);  // Juli
     end = new Date(tahun, 11, 31);  // Desember
   } else {
     // Semester 2 → Januari–Juni tahun berikutnya
@@ -93,6 +93,13 @@ const LaporanKehadiranPage: React.FC = () => {
     tahun,
     start_date: start.toISOString().split("T")[0],
     end_date: end.toISOString().split("T")[0],
+  };
+} else {
+  // ✅ tambahkan ini
+  params = {
+    range: "bulanan",
+    bulan,
+    tahun,
   };
 }
 

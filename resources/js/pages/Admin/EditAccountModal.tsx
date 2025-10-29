@@ -55,7 +55,7 @@ export default function EditAccountModal({ user, eskuls, onClose }: any) {
     <>
       {/* === MAIN MODAL === */}
       <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-[1050px] p-8 overflow-auto max-h-[90vh]">
+        <div className="bg-white rounded-2xl border-2 border-[#8B23ED] shadow-xl w-full max-w-[500px] p-8 overflow-auto max-h-[90vh]">
           <h3 className="text-xl font-semibold mb-4">Edit Account</h3>
 
           <form onSubmit={submit} className="flex flex-col gap-4">
@@ -86,7 +86,7 @@ export default function EditAccountModal({ user, eskuls, onClose }: any) {
               )}
             </div>
 
-            {/* Confirm Password */}
+            {/* Confirm Password
             <div className="grid gap-2">
               <Label>Konfirmasi Password</Label>
               <Input
@@ -97,7 +97,7 @@ export default function EditAccountModal({ user, eskuls, onClose }: any) {
                 }
                 placeholder="Ulangi password"
               />
-            </div>
+            </div> */}
 
             {/* Ekstrakurikuler Multi Select */}
             <div className="grid gap-2 col-span-2">
@@ -143,20 +143,20 @@ export default function EditAccountModal({ user, eskuls, onClose }: any) {
             </div>
 
             {/* Tombol */}
-            <div className="col-span-2 flex justify-center gap-4 mt-6">
+            <div className="col-span-2 flex justify-between gap-3 mt-6">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => onClose?.()}
                 disabled={processing}
-                className="bg-white border border-gray-300 w-40"
+                className="bg-white border border-[#8B23ED] w-65 hover:bg-gray-200 hover:text-black shadow-[4.0px_4.0px_8.0px_rgba(0,0,0,0.38)]"
               >
                 Kembali
               </Button>
               <Button
                 type="submit"
                 disabled={processing}
-                className="bg-[#E4D2FC] hover:bg-[#d6b9f7] text-black w-40"
+                className="bg-[#8B23ED] hover:bg-purple-700 text-white w-65 border border-[#8B23ED] shadow-[4.0px_4.0px_8.0px_rgba(0,0,0,0.38)] "
               >
                 {processing && (
                   <LoaderCircle className="h-4 w-4 animate-spin" />
