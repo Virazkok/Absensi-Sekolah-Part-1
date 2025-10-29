@@ -1,13 +1,16 @@
 # ========================================
-# 1️⃣ BUILD FRONTEND (React / Vite)
+# 1️⃣ BUILD FRONTEND (Vite)
 # ========================================
 FROM node:18 AS node-builder
 WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
 RUN npm install
+
+# Copy semua file dan build frontend
 COPY . .
-RUN npm run build || echo "⚠️ Build skipped"
+RUN npm run build
 
 
 # ========================================
@@ -15,7 +18,7 @@ RUN npm run build || echo "⚠️ Build skipped"
 # ========================================
 FROM php:8.2-apache
 
-# Install library system untuk GD dan ekstensi PHP penting
+# Install extensions yang diperlukan
 RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
@@ -29,25 +32,22 @@ RUN apt-get update && apt-get install -y \
     a2enmod rewrite && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy file project Laravel
+# Copy semua file Laravel
 COPY . .
 
-# Copy hasil build frontend (Vite/React)
-COPY --from=node-builder /app/public ./public
+# ✅ Copy hasil build frontend dari tahap Node ke Laravel
+COPY --from=node-builder /app/public/build ./public/build
 
-# Install Composer
+# Install Composer dan dependensi Laravel
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-
-# ✅ Install dependensi Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Set permission untuk storage & cache
+# Permissions
 RUN chown -R www-data:www-data storage bootstrap/cache
 
-# ✅ Jalankan artisan commands saat container start, bukan saat build
+# Jalankan Laravel dan Apache saat container start
 CMD php artisan config:clear && \
     php artisan cache:clear && \
     php artisan view:clear && \
