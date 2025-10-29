@@ -6,7 +6,7 @@ import axios from "axios";
 import BottomNavbar from "@/components/Murid/BottomNavbar";
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || window.location.origin;
+axios.defaults.baseURL =  window.location.origin;
 
 interface Student {
   id: number;

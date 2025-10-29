@@ -6,7 +6,7 @@ import { Student } from '@/types';
 import { Head } from '@inertiajs/react';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || window.location.origin;
+axios.defaults.baseURL =  window.location.origin;
 
 const HomeSiswa = () => {
   /* ---------- STATE ---------- */

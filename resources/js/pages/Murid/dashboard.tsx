@@ -7,7 +7,7 @@ import { PageProps } from '@inertiajs/core';
 import BottomNavbar from '@/components/Murid/BottomNavbar';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || window.location.origin; // <-- tidak ada spasi
+axios.defaults.baseURL =  window.location.origin; // <-- tidak ada spasi
 
 export default function QrCode({ qrCode: initialQrCode, auth }: { qrCode: string } & any) {
   const [qrCode, setQrCode]   = useState<string>(initialQrCode);

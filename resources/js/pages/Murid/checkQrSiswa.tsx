@@ -6,7 +6,7 @@ import axios from 'axios';
 import { PageProps, Student } from '@/types';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = import.meta.env.VITE_API_URL || window.location.origin;
+axios.defaults.baseURL =  window.location.origin;
 
 const QRCheckInOut = ({ mode = 'in' }) => {
     const [user, setUser] = useState<Student | null>(null);
