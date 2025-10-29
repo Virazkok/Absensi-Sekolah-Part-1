@@ -18,16 +18,19 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
     $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+    // ⬇️ Letakkan di sini agar Sanctum bisa handle request frontend
     $middleware->api(prepend: [
-        EnsureFrontendRequestsAreStateful::class,
+        \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
     ]);
 
+    // Web middleware (setelah Sanctum)
     $middleware->web(append: [
         HandleAppearance::class,
         HandleInertiaRequests::class,
         AddLinkHeadersForPreloadedAssets::class,
     ]);
 })
+
     ->withExceptions(function (Exceptions $exceptions) {
         //
     })->create();
