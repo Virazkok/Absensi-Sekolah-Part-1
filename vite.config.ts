@@ -9,7 +9,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 
   build: {
-    outDir: 'dist', // penting!
+    outDir: 'public/build',
   },
   server: {
     proxy: {
