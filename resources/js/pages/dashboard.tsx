@@ -29,7 +29,7 @@ const Dashboard: React.FC<DashboardProps> = ({ auth }) => {
     try {
       const parsedData = JSON.parse(qrData);
 
-      const response = await fetch("http://127.0.0.1z:8000/api/scan-qr/check-in", {
+      const response = await fetch("http://127.0.0.1:8000/api/scan-qr/check-in", {
         method: "POST",
         credentials: "include",
         headers: {
