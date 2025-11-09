@@ -73,7 +73,7 @@ const Dashboard: React.FC<DashboardProps> = ({ auth }) => {
             <main className="flex-1 overflow-x-auto p-4">
               {/* Header */}
               <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-                <h1 className="text-2xl font-bold">Dashboard</h1>
+                <h1 className="text-2xl font-bold">Check Out Scanner</h1>
                 <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
                   <div className="flex items-center gap-2 p-2">
                     <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
