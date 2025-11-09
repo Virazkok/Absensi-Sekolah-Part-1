@@ -27,27 +27,21 @@ class AbsensiEskul extends Model
         return $this->hasMany(KehadiranEskul::class, 'absensi_eskul_id');
     }
 
-    // app/Models/AbsensiEskul.php
+    
 public function kehadiran()
 {
     return $this->hasMany(KehadiranEskul::class, 'absensi_eskul_id');
 }
-    // app/Models/AbsensiEskul.php
+    
 protected $casts = [
     'tanggal'   => 'date:Y-m-d',
     'dipublish' => 'boolean',
 ];
-
-// controller
 public function detailAbsensi(AbsensiEskul $absensi)
 {
     $absensi->load('eskul:id,nama', 'kehadiran.user');
     return inertia('Admin/DetailAbsensi', [
         'absensi' => $absensi,
     ]);
-}
-
-
-
-    
+} 
 }

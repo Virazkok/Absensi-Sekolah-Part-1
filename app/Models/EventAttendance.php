@@ -9,19 +9,26 @@ class EventAttendance extends Model
 {
     protected $table = 'kehadiran_event';
     protected $fillable = [
-        'event_id',
-        'user_id',
-        'murid_id',
-        'attended_at'
+        'event_id', 'user_id', 'murid_id', 'attended_at', 'registration_id'
     ];
 
-    public function event()
+    public function event() { return $this->belongsTo(Event::class); }
+
+    public function user() { return $this->belongsTo(User::class)->with('kelas', 'murid.kelas'); }
+
+    public function murid() { return $this->belongsTo(Murid::class); }
+
+    public function getDisplayNameAttribute()
     {
-        return $this->belongsTo(Event::class);
+        return $this->user->name
+            ?? optional($this->murid)->nama
+            ?? 'Tidak diketahui';
     }
 
-    public function user()
+    public function getKelasNameAttribute()
     {
-        return $this->belongsTo(User::class)->with('murid');
+        return $this->user->kelas->name
+            ?? optional($this->murid->kelas)->name
+            ?? '-';
     }
 }

@@ -14,7 +14,6 @@ const BottomNavbar = () => {
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-[#4B0082] px-2 py-1 flex justify-around text-white z-40 rounded-t-xl">
       {menus.map((item) => {
-        // Cek apakah path sekarang cocok dengan salah satu path dalam array
         const isActive = item.paths.some((p) => url.startsWith(p));
 
         return (

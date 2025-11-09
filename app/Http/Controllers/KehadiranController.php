@@ -12,8 +12,6 @@ class KehadiranController extends Controller
     {
         $muridId = $request->murid_id;
         $today = Carbon::today()->toDateString();
-
-        // Cari record hari ini
         $presensi = Kehadiran::where('murid_id', $muridId)
             ->whereDate('tanggal', $today)
             ->first();
@@ -24,8 +22,6 @@ class KehadiranController extends Controller
                 'message' => 'Belum ada data presensi hari ini.'
             ], 404);
         }
-
-        // Jika sudah check-in tapi belum check-out → tandai Tidak Hadir
         if ($presensi->jam_masuk && !$presensi->jam_keluar) {
             $presensi->jam_keluar = null;
             $presensi->kehadiran = 'Tidak Hadir';

@@ -6,9 +6,12 @@ import axios from 'axios';
 import { PageProps, Student } from '@/types';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL =  window.location.origin;
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
-const QRCheckInOut = ({ mode = 'in' }) => {
+const QRCheckInOut = () => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const mode = queryParams.get('mode') || 'in';
+
     const [user, setUser] = useState<Student | null>(null);
     const [scanned, setScanned] = useState(false);
     const [time, setTime] = useState('');
@@ -28,23 +31,19 @@ const QRCheckInOut = ({ mode = 'in' }) => {
     };
 
     useEffect(() => {
-        // Fetch QR code immediately when the component mounts
         fetchQrCode();
 
         let tick: NodeJS.Timeout;
         let fetch: NodeJS.Timeout;
 
         const loop = () => {
-            // Fetch new QR every 20 seconds
             fetch = setInterval(() => {
                 fetchQrCode();
             }, 20000);
-
-            // Update countdown every second
             tick = setInterval(() => {
                 setCount((c) => {
                     if (c === 0) {
-                        return 20; // Reset to 20 seconds
+                        return 20; 
                     }
                     return c - 1;
                 });
@@ -59,17 +58,14 @@ const QRCheckInOut = ({ mode = 'in' }) => {
     }, []);
 
     useEffect(() => {
-        // Mengambil data user dari localStorage terlebih dahulu
         const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
         if (storedUser && storedUser.id) {
             console.log("📦 User dari localStorage:", storedUser);
             setUser(storedUser);
         } else {
-            // Fallback ke API jika tidak ada di localStorage
             axios.get('/api/student/me')
                 .then(res => {
                     setUser(res.data);
-                    // Simpan ke localStorage untuk penggunaan berikutnya
                     localStorage.setItem('user', JSON.stringify(res.data));
                 })
                 .catch(err => {
@@ -79,7 +75,6 @@ const QRCheckInOut = ({ mode = 'in' }) => {
     }, []);
 
     useEffect(() => {
-        // Isi jam otomatis ketika load halaman
         const now = new Date();
         const formatted = now.toLocaleTimeString("id-ID", {
             hour: "2-digit",
@@ -93,7 +88,6 @@ const QRCheckInOut = ({ mode = 'in' }) => {
             <h2 className="text-2xl font-bold text-center mt-4">
                 {mode === 'in' ? 'Check In' : 'Check Out'}
             </h2>
-
             <div className="flex-1 flex items-center justify-center">
                 <div className="bg-white rounded-2xl shadow-lg p-6 w-full max-w-sm text-center">
                     <div className="flex items-center gap-4 mb-4">

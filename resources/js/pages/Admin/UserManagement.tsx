@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import CreateUserModal from "@/pages/auth/register";
-import { href } from "react-router-dom";
+import Sidebar from "@/Components/sidebar";
 
 type Props = {
   users: {
@@ -34,11 +34,9 @@ type Props = {
   };
 };
 
-
-
 export default function UserManagement() {
   const { props } = usePage<Props>();
-  const { users, user } = usePage<Props>().props;
+  const { users } = props;
 
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
@@ -56,24 +54,7 @@ export default function UserManagement() {
       <Head title="User Management" />
       <div className="flex">
         {/* Sidebar */}
-        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
-          <nav className="space-y-2 text-sm">
-            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
-            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--user-settings-lineW.svg" alt="" /> User Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/events')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/eskul')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
-            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
-          </nav>
-        </aside>
+        <Sidebar />
 
         {/* Konten utama */}
         <main className="flex-1 p-4 mr-3">
@@ -82,19 +63,31 @@ export default function UserManagement() {
             <h1 className="text-2xl font-bold">User Management</h1>
             <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
               <div className="flex items-center gap-2 p-2">
-                <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
-                <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
+                <img
+                  src={
+                    props.auth?.user?.avatar ??
+                    "/images/avatar-placeholder.png"
+                  }
+                  alt="avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <div className="text-[16px]">
+                  {props.auth?.user?.name ?? "Admin"}
+                </div>
               </div>
               <div>
-              <button className="p-2 rounded bg-white">⚙️</button>
-              <button className="p-2 rounded bg-white">🔓</button>
+                <button className="p-2 rounded bg-white">⚙️</button>
+                <button className="p-2 rounded bg-white">🔓</button>
               </div>
-              
             </div>
           </div>
+
           <div className="flex justify-between items-center mb-6">
             <p className="text-sm text-gray-600 mt-1">
-                Semua User <span className="font-semibold text-gray-400">{users.total}</span>
+              Semua User{" "}
+              <span className="font-semibold text-gray-400">
+                {users.total}
+              </span>
             </p>
             <div className="flex items-center gap-3">
               <div className="relative">
@@ -118,11 +111,9 @@ export default function UserManagement() {
                 <option value="admin">Admin</option>
               </select>
 
-              
               <CreateUserModal />
             </div>
           </div>
-          
 
           {/* Table */}
           <div className="overflow-hidden rounded-xl border border-[#8B23ED] bg-white">
@@ -151,7 +142,6 @@ export default function UserManagement() {
                     className="border-b hover:bg-[#FAF7FF] transition"
                   >
                     <td className="py-3 px-4">{u.name}</td>
-                    
                     <td className="py-3 px-4 capitalize">{u.role}</td>
                     <td className="py-3 px-4">
                       <span
@@ -205,28 +195,41 @@ export default function UserManagement() {
             </table>
           </div>
 
-          {/* Pagination */}
-          <div className="flex justify-between items-center mt-5 text-sm text-gray-600">
-            <div>
-              Halaman {users.current_page} dari {users.last_page}
-            </div>
-            <div className="space-x-2">
-              {users.current_page > 1 && (
-                <Link
-                  href={`?page=${users.current_page - 1}`}
-                  className="px-3 py-1 border rounded"
-                >
-                  Prev
-                </Link>
-              )}
-              {users.current_page < users.last_page && (
-                <Link
-                  href={`?page=${users.current_page + 1}`}
-                  className="px-3 py-1 border rounded"
-                >
-                  Next
-                </Link>
-              )}
+          {/* Pagination (Custom Ellipsis Style) */}
+          <div className="flex justify-end mt-6">
+            <div className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white shadow-sm">
+              {Array.from({ length: users.last_page }, (_, i) => i + 1)
+                .filter((page) => {
+                  if (page === 1 || page === users.last_page) return true;
+                  if (
+                    page >= users.current_page - 2 &&
+                    page <= users.current_page + 2
+                  )
+                    return true;
+                  return false;
+                })
+                .map((page, index, visible) => {
+                  const prevPage = visible[index - 1];
+                  const showDots = prevPage && page - prevPage > 1;
+
+                  return (
+                    <React.Fragment key={page}>
+                      {showDots && (
+                        <span className="px-2 text-gray-400">…</span>
+                      )}
+                      <Link
+                        href={`?page=${page}`}
+                        className={`px-3 py-1.5 rounded-full transition-all duration-150 ${
+                          users.current_page === page
+                            ? "bg-orange-400 text-white"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </Link>
+                    </React.Fragment>
+                  );
+                })}
             </div>
           </div>
         </main>

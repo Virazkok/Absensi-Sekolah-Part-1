@@ -47,12 +47,12 @@ export default function EventDetail() {
       </div>
 
       {/* Event Image */}
-      
         <img
-  src={event.image ? `/storage/${event.image}` : `/default-avatar.png`}
-  alt={event.title}
-  className="w-full h-48 object-cover rounded-lg mb-4"
-/>
+        src={event.image || '/default-avatar.png'}
+        alt={event.title}
+        className="w-full h-48 object-cover rounded-t-[20px]"
+        onError={(e: any) => (e.target.src = '/default-avatar.png')}
+      />
       
 
       {/* Title */}
@@ -60,32 +60,30 @@ export default function EventDetail() {
       <h2 className="text-sm font-semibold text-center mb-4">Jadwal Event</h2>
 
      {/* Jadwal */}
-<div className="flex justify-between text-sm mb-3">
-  <div>
-    <p>Hari, Tanggal</p>
-    <p className="font-semibold">
-      {new Date(event.start_date).toLocaleDateString("id-ID", {
-        weekday: "long",
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      })}
-    </p>
-  </div>
-  <div className="text-right">
-    <p >Waktu</p>
-    <p className="font-semibold">
-      {new Date(event.start_date).toLocaleTimeString("id-ID", {
-        hour: "2-digit",
-        minute: "2-digit",
-      })}{" "}
-      s.d{" Selesai"}
-      
-    </p>
-  </div>
-</div>
-
-
+      <div className="flex justify-between text-sm mb-3">
+        <div>
+          <p>Hari, Tanggal</p>
+          <p className="font-semibold">
+            {new Date(event.start_date).toLocaleDateString("id-ID", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        </div>
+        <div className="text-right">
+          <p >Waktu</p>
+          <p className="font-semibold">
+            {new Date(event.start_date).toLocaleTimeString("id-ID", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}{" "}
+            s.d{" Selesai"}
+            
+          </p>
+        </div>
+      </div>
       {/* Deskripsi */}
       <div className="mb-3">
         <h3 className="text-sm mb-1">Deskripsi Event</h3>
@@ -135,16 +133,15 @@ export default function EventDetail() {
 
       {/* Modal Register */}
       {showRegister && (
-  <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
-    <EventRegister
-  event={event}
-  auth={{ user: auth.user }}
-  onClose={() => setShowRegister(false)}
-/>
+      <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-50">
+        <EventRegister
+      event={event}
+      auth={{ user: auth.user }}
+      onClose={() => setShowRegister(false)}
+    />
 
-  </div>
-)}
-
+      </div>
+    )}
     </div>
   );
 }

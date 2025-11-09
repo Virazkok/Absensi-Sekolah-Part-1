@@ -60,26 +60,19 @@ export default function EventConfirmation() {
   const startDate = parseLocalDate(event.start_date_plain);
   const endDate = parseLocalDate(event.end_date_plain);
   const now = new Date();
-
-  // cek apakah sekarang di range jam event
   const canGenerateByTime = now >= startDate && now <= endDate;
-
-  // cek apakah sekarang sudah hari H
   const isSameDay =
     now.toISOString().split("T")[0] ===
     startDate.toISOString().split("T")[0];
-
-  // tombol aktif kalau sudah hari H (meski jam belum) sampai event selesai
   const canGenerateQR = isSameDay || canGenerateByTime;
 
-  const showComingSoon = !isSameDay && now < startDate; // tampilkan banner hanya sebelum hari H
+  const showComingSoon = !isSameDay && now < startDate; 
 
   const generateQR = async () => {
   if (!canGenerateQR) return;
   setIsGenerating(true);
 
   try {
-    // Setelah sukses generate → redirect ke halaman EventQR
     router.visit(route("events.qr.show", { id: event.id }));
   } catch (err) {
     console.error(err);
@@ -87,9 +80,6 @@ export default function EventConfirmation() {
     setIsGenerating(false);
   }
 };
-
-
-
   const tanggalEvent = startDate.toLocaleDateString("id-ID", {
     weekday: "long",
     day: "2-digit",

@@ -27,9 +27,7 @@ export default function EditAccountModal({ user, eskuls, onClose }: any) {
     role: user.role || "murid",
   });
 
-  const [warningOpen, setWarningOpen] = useState(false);
-
-  // === HANDLE PILIHAN ESKUL (MAKSIMAL 3) ===
+  const [warningOpen, setWarningOpen] = useState(false)
   const handleEskulChange = (selectedOptions: any) => {
     if (selectedOptions && selectedOptions.length > 3) {
       setWarningOpen(true);
@@ -43,7 +41,7 @@ export default function EditAccountModal({ user, eskuls, onClose }: any) {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    post(`/Admin/UserDetail/${user.id}`, {
+    post(`/Admin/UserManagement/UserDetail/${user.id}`, {
       onSuccess: () => {
         onClose();
         window.location.reload();

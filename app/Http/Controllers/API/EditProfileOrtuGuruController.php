@@ -10,7 +10,7 @@ class EditProfileOrtuGuruController extends Controller
 {
     public function me(Request $request)
     {
-        $user = $request->user(); // tidak perlu load kelas
+        $user = $request->user(); 
         return response()->json($user);
     }
 

@@ -53,7 +53,7 @@ class AttendanceController extends Controller
             $studentId = Cache::get('qr_token_'.$qrData['token']);
             $student = Murid::findOrFail($studentId);
             
-            // Catat absensi
+            
             $attendance = Kehadiran::create([
                 'student_id' => $student->id,
                 'class_id' => $student->class_id,

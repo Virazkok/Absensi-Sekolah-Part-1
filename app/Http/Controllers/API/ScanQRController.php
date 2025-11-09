@@ -10,6 +10,8 @@ use App\Models\Event;
 use App\Models\Kehadiran;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ScanQRController extends Controller
 {
@@ -77,50 +79,68 @@ class ScanQRController extends Controller
 
      public function scanEvent(Request $request)
 {
-    $data = $request->input('qr_data');
+    $qrData = $request->all();
+    if (isset($qrData['qr_data']) && is_string($qrData['qr_data'])) {
+        $decoded = json_decode($qrData['qr_data'], true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            $qrData = $decoded;
+        }
+    }
+    Log::info('scanEvent called, payload:', $qrData);
 
-    // Pastikan QR punya event_id & token
-    if (!isset($data['event_id']) || !isset($data['qr_token'])) {
+    if (!is_array($qrData) || !isset($qrData['event_id']) || !isset($qrData['qr_token']) || !isset($qrData['user_id'])) {
+        Log::warning('scanEvent invalid payload', ['payload' => $qrData]);
         return response()->json(['message' => 'Format QR tidak valid'], 400);
     }
 
-    // Ambil event berdasarkan event_id dari QR
-    $event = Event::find($data['event_id']);
-    if (!$event) {
-        return response()->json(['message' => 'Event tidak ditemukan'], 404);
-    }
-
-    // 🔹 Hapus validasi strict token agar bisa scan banyak event
-    // (opsional: tetap cek kalau mau minimal validasi keamanan)
-    // if ($event->qr_token !== $data['token']) {
-    //     return response()->json(['message' => 'Token QR tidak valid'], 400);
-    // }
-
-    // Cari registrasi user berdasarkan user_id (atau registration_id kalau mau)
-    $registration = EventRegistration::where('event_id', $event->id)
-        ->where('user_id', $data['user_id'] ?? null)
+    $registration = EventRegistration::where('event_id', $qrData['event_id'])
+        ->where('user_id', $qrData['user_id'])
+        ->where('qr_token', $qrData['qr_token'])
         ->first();
 
     if (!$registration) {
-        return response()->json(['message' => 'Peserta tidak ditemukan'], 404);
+        Log::warning('scanEvent registration not found', ['payload' => $qrData]);
+        return response()->json(['message' => 'Data tidak ditemukan'], 404);
     }
 
-    // Catat kehadiran
-    EventAttendance::updateOrCreate(
-        ['registration_id' => $registration->id],
-        [
-            'event_id'    => $event->id,
-            'murid_id'    => $registration->murid_id ?? null,
-            'attended_at' => now(),
-        ]
-    );
+    $muridId = $registration->murid_id ?? $registration->user_id;
 
-    return response()->json([
-        'message'      => 'Kehadiran berhasil dicatat',
-        'registration' => $registration,
-        'event'        => $event
-    ]);
-}
+    DB::beginTransaction();
+    try {
+        $already = EventAttendance::where('registration_id', $registration->id)
+            ->whereDate('attended_at', Carbon::today())
+            ->first();
+
+        if ($already) {
+            DB::commit();
+            Log::info('scanEvent already attended', ['registration_id' => $registration->id, 'attendance_id' => $already->id]);
+            return response()->json([
+                'message' => 'Peserta sudah melakukan scan hari ini',
+                'registration' => $registration,
+                'attendance' => $already,
+            ]);
+        }
+        $attendance = EventAttendance::create([
+            'registration_id' => $registration->id,
+            'event_id'        => $registration->event_id,
+            'murid_id'        => $muridId,
+            'attended_at'     => now(),
+        ]);
+
+        DB::commit();
+        Log::info('scanEvent saved attendance', ['attendance' => $attendance->toArray()]);
+
+        return response()->json([
+            'message' => 'Scan berhasil dan kehadiran dicatat!',
+            'registration' => $registration,
+            'attendance' => $attendance,
+        ]);
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('scanEvent save failed: ' . $e->getMessage(), ['exception' => $e]);
+        return response()->json(['message' => 'Gagal mencatat kehadiran', 'error' => $e->getMessage()], 500);
+    }
+} 
 
     public function scanCheckOut(Request $request)
     {
@@ -156,9 +176,6 @@ class ScanQRController extends Controller
                     'jam_keluar' => $presensi->jam_keluar,
                 ]);
             }
-
-            // Update jam_keluar
-           // Update jam_keluar
             $presensi->update([
                 'jam_keluar' => now()->toTimeString(),
             ]);

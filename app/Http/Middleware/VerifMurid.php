@@ -14,7 +14,7 @@ class VerifMurid
         }
 
         if (!Auth::user()->is_murid) {
-            return redirect('/murid/dashboard'); // ✅ route yang tidak pakai VerifMurid
+            return redirect('/murid/dashboard'); 
         }
 
         

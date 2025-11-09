@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
 import { ChevronLeft, ChevronRight, Search, Filter } from "lucide-react";
+import Sidebar from "@/Components/sidebar";
 
 interface RekapRow {
   nama: string;
@@ -83,24 +84,7 @@ const RiwayatKehadiran: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#F7F7F7] text-gray-900 flex">
       {/* Sidebar */}
-        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
-          <nav className="space-y-2 text-sm">
-            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
-            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/events')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/eskul')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
-            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--history-lineW.svg" alt="" /> Riwayat Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
-          </nav>
-        </aside>
+       <Sidebar />
 
 
       {/* Main content */}

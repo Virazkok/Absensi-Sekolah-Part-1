@@ -41,8 +41,6 @@ class StatsSekolahController extends Controller
         ], 500);
     }
 }
-
-
     // Rata-rata bulanan per kelas
     public function average()
     {

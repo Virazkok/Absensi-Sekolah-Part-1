@@ -82,38 +82,36 @@ const EditProfile: React.FC = () => {
   return (
     <div className="max-w-sm mx-auto bg-white min-h-screen">
       {/* Header */}
-<div className="bg-purple-700 p-4 flex items-center gap-4">
-  {/* Avatar dengan tombol ganti foto */}
-  <div className="relative w-24 h-24 flex-shrink-0">
-    <img
-      src={user.foto || user?.avatar || "/default-avatar.png"}
-      alt="Foto Profil"
-      className="w-24 h-24 rounded-full object-cover"
-    />
-    <button
-      type="button"
-      onClick={() => fileInputRef.current?.click()}
-      className="absolute bottom-1 right-1 bg-orange-500 text-white p-2 rounded-full shadow-md hover:bg-orange-600"
-    >
-      <Camera size={18} />
-    </button>
-    <input
-      type="file"
-      ref={fileInputRef}
-      accept="image/*"
-      className="hidden"
-      onChange={handleAvatarChange}
-    />
-  </div>
+      <div className="bg-purple-700 p-4 flex items-center gap-4">
+        {/* Avatar dengan tombol ganti foto */}
+        <div className="relative w-24 h-24 flex-shrink-0">
+          <img
+            src={user.foto || user?.avatar || "/default-avatar.png"}
+            alt="Foto Profil"
+            className="w-24 h-24 rounded-full object-cover"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="absolute bottom-1 right-1 bg-orange-500 text-white p-2 rounded-full shadow-md hover:bg-orange-600"
+          >
+            <Camera size={18} />
+          </button>
+          <input
+            type="file"
+            ref={fileInputRef}
+            accept="image/*"
+            className="hidden"
+            onChange={handleAvatarChange}
+          />
+        </div>
 
-  {/* Identitas di kanan avatar */}
-  <div className="flex flex-col">
-    <h1 className="font-semibold text-[23px] text-white">{user.name}</h1>
-    <p className="text-xs text-gray-200">{user.kelas?.name}</p>
-  </div>
-</div>
-
-
+        {/* Identitas di kanan avatar */}
+        <div className="flex flex-col">
+          <h1 className="font-semibold text-[23px] text-white">{user.name}</h1>
+          <p className="text-xs text-gray-200">{user.kelas?.name}</p>
+        </div>
+      </div>
       {error && <p className="text-red-500 text-sm p-3">{error}</p>}
 
       <form onSubmit={handleSubmit} className="p-4 space-y-5 text-gray-900">

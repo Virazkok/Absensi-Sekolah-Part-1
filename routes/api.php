@@ -38,6 +38,7 @@ Route::prefix('admin/dashboard')->group(function () {
     Route::get('/report', [AdminDashboardReportController::class, 'index']);
 });
 
+Route::get('/stats/event-summary', [StatistikController::class, 'eventSummary']);
 
 Route::prefix('admin')->group(function () {
     Route::prefix('dashboard')->group(function () {
@@ -63,8 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/student/overview', [ApiMuridOverviewController::class, 'index']);
-
-    // ✅ ambil eskul yang diikuti murid dari users.eskul_siswa1_id - 3
     Route::get('/student/eskuls', function () {
         $user = Auth::user();
 
@@ -81,9 +80,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 Route::get('/riwayat-kehadiran', [OrangTuaGuruController::class, 'attendanceHistory']);
-// (opsional) tambahkan middleware auth:sanctum bila perlu:
- // Route::middleware('auth:sanctum')->get('/riwayat-kehadiran', [...]);
-            
 
 Route::get('/event/list', function () {
     return Event::all(['id', 'title']);
@@ -133,7 +129,6 @@ Route::post('/scan-qr/check-out', [ScanQRController::class, 'scanCheckOut']);
 
 Route::middleware(['auth', 'verified'])
      ->get('/generate-qr', [MuridController::class, 'generateQrCode']);
-    // Route untuk mendapatkan data
     Route::get('/murid', function () {
         return Murid::with('kelas')->get();
     });
@@ -148,7 +143,7 @@ Route::middleware(['auth', 'verified'])
             ->get();
     });
     Route::get('/kelas', function() {
-    return \App\Models\Kelas::all(); // Ganti dengan model Kelas Anda
+    return \App\Models\Kelas::all();
 });
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/events', [EventController::class, 'index']);
@@ -160,7 +155,6 @@ Route::middleware('auth:sanctum')->group(function () {
     return $request->user()->eventRegistrations;
     });
 });
-// routes/api.php
 Route::middleware('auth:sanctum')->group(function () {
     Route::patch('/events/{id}/publish', [EventController::class, 'updatePublishStatus']);
 });
@@ -168,8 +162,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
-
-// routes/api.php
 Route::get('/eskuls', function() {
     return \App\Models\Eskul::all();
 });

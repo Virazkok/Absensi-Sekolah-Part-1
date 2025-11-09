@@ -25,7 +25,7 @@ class LaporanController extends Controller
 
         $now = Carbon::now('Asia/Jakarta');
 
-        // === Tentukan Rentang Tanggal ===
+        
         switch ($range) {
             case 'mingguan':
                 $startDate = $request->query('start_date');
@@ -48,11 +48,11 @@ class LaporanController extends Controller
         $end = Carbon::parse($endDate)->endOfDay();
     } else {
         if ($semester === 1) {
-            // Semester 1: Juli–Desember tahun ini
+            
             $start = Carbon::create($tahun, 7, 1)->startOfDay();
             $end = Carbon::create($tahun, 12, 31)->endOfDay();
         } else {
-            // Semester 2: Januari–Juni tahun berikutnya
+           
             $start = Carbon::create($tahun + 1, 1, 1)->startOfDay();
             $end = Carbon::create($tahun + 1, 6, 30)->endOfDay();
         }
@@ -60,7 +60,7 @@ class LaporanController extends Controller
     break;
 
 
-            default: // bulanan
+            default: 
                 $startDate = $request->query('start_date');
                 $endDate = $request->query('end_date');
                 if ($startDate && $endDate) {
@@ -73,7 +73,7 @@ class LaporanController extends Controller
                 break;
         }
 
-        // === Ambil semua murid agar yang tidak hadir tetap muncul ===
+        
         $muridQuery = Murid::with('kelas');
         if ($kelasId) $muridQuery->where('kelas_id', $kelasId);
         $murids = $muridQuery->get();

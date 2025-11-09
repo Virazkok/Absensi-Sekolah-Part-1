@@ -16,9 +16,6 @@ class AdminDashboardStatistikController extends Controller
         Carbon::setLocale('id');
     }
 
-    /**
-     * GET /api/admin/dashboard/statistik?range=weekly|monthly|semester
-     */
     public function index(Request $request)
     {
         $range = $request->query('range', 'weekly');
@@ -49,22 +46,30 @@ class AdminDashboardStatistikController extends Controller
         }
 
         // === Sekolah ===
-        $totalSekolah = Kehadiran::whereBetween('tanggal', [$start, $end])->count();
+        $totalSekolah = Kehadiran::whereBetween('tanggal', [$start, $end])
+    ->whereHas('murid.user', fn($q) => $q->where('role', 'murid'))
+    ->count();
         $hadirSekolah = Kehadiran::whereBetween('tanggal', [$start, $end])
-            ->whereRaw('LOWER(kehadiran) IN ("hadir", "terlambat")')
-            ->count();
+    ->whereHas('murid.user', fn($q) => $q->where('role', 'murid'))
+    ->whereRaw('LOWER(kehadiran) IN ("hadir", "terlambat")')
+    ->count();
         $persenSekolah = $totalSekolah > 0 ? round(($hadirSekolah / $totalSekolah) * 100, 1) : 0;
 
         // === Eskul ===
-        $totalEskul = KehadiranEskul::whereBetween('tanggal', [$start, $end])->count();
+      $totalEskul = KehadiranEskul::whereBetween('tanggal', [$start, $end])
+    ->whereHas('user', fn($q) => $q->where('role', 'murid'))
+    ->count();
+
         $hadirEskul = KehadiranEskul::whereBetween('tanggal', [$start, $end])
             ->whereRaw('LOWER(status) = "hadir"')
             ->count();
         $persenEskul = $totalEskul > 0 ? round(($hadirEskul / $totalEskul) * 100, 1) : 0;
 
         // === Event ===
-        $totalEvent = EventKehadiran::whereBetween('attended_at', [$start, $end])->count();
-        // EventKehadiran biasanya hanya menyimpan data "hadir"
+       $totalEvent = EventKehadiran::whereBetween('attended_at', [$start, $end])
+    ->whereHas('murid.user', fn($q) => $q->where('role', 'murid'))
+    ->count();
+
         $hadirEvent = $totalEvent;
         $persenEvent = $totalEvent > 0 ? round(($hadirEvent / $totalEvent) * 100, 1) : 0;
 

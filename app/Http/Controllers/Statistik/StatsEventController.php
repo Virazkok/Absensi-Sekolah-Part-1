@@ -34,10 +34,6 @@ class StatsEventController extends Controller
 
     return response()->json(['percentage' => $percentage]);
 }
-
-
-
-
     public function trend(Request $request)
     {
         $data = EventKehadiran::select(

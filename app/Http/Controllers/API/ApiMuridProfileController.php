@@ -28,7 +28,7 @@
 
             $user->email = $request->email;
 
-            // Cek password lama sebelum ganti
+            
             if ($request->filled('password_baru')) {
                 if (!$request->filled('password_lama') || !Hash::check($request->password_lama, $user->password)) {
                     return response()->json([
@@ -38,14 +38,14 @@
                 $user->password = Hash::make($request->password_baru);
             }
 
-            // Avatar simpan ke database (base64)
+           
             if ($request->hasFile('avatar')) {
     $image = $request->file('avatar');
 
-    // Simpan file di storage/public
+   
     $filePath = $image->store('avatars', 'public');
 
-    // Simpan base64 ke database
+    
     $base64 = 'data:image/' . $image->getClientOriginalExtension() . ';base64,' . base64_encode(file_get_contents($image));
 
     $user->avatar_path = $filePath;

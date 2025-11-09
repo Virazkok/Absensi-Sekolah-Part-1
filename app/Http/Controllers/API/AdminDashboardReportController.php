@@ -27,7 +27,7 @@ class AdminDashboardReportController extends Controller
     $endDate = $request->query('end_date');
 
     if ($startDate && $endDate) {
-        // jika frontend kirim range manual
+        
         $start = Carbon::parse($startDate)->startOfDay();
         $end = Carbon::parse($endDate)->endOfDay();
     } else {
@@ -74,7 +74,10 @@ class AdminDashboardReportController extends Controller
     }
 
     // === Ambil semua murid (agar yang tidak hadir tetap muncul) ===
-    $murids = Murid::with('kelas')->get();
+    $murids = Murid::with('kelas', 'user')
+    ->whereHas('user', fn($q) => $q->where('role', 'murid'))
+    ->get();
+
 
     // === Kehadiran Sekolah ===
     $kehadiranSekolah = Kehadiran::with('murid.kelas')
@@ -95,9 +98,10 @@ class AdminDashboardReportController extends Controller
 
     // === Kehadiran Eskul ===
     $kehadiranEskul = KehadiranEskul::with(['user.murid.kelas'])
-        ->whereBetween('tanggal', [$start, $end])
-        ->get()
-        ->groupBy('user_id')
+    ->whereBetween('tanggal', [$start, $end])
+    ->whereHas('user', fn($q) => $q->where('role', 'murid'))
+    ->get()
+    ->groupBy('user_id')
         ->map(function ($items) {
             $user = $items->first()->user;
             $murid = $user->murid;
@@ -112,10 +116,11 @@ class AdminDashboardReportController extends Controller
         });
 
     // === Kehadiran Event ===
-    $kehadiranEvent = EventKehadiran::with(['murid.kelas'])
-        ->whereBetween('attended_at', [$start, $end])
-        ->get()
-        ->groupBy('murid_id')
+    $kehadiranEvent = EventKehadiran::with(['murid.kelas', 'murid.user'])
+    ->whereBetween('attended_at', [$start, $end])
+    ->whereHas('murid.user', fn($q) => $q->where('role', 'murid'))
+    ->get()
+    ->groupBy('murid_id')
         ->map(function ($items) {
             $murid = $items->first()->murid;
             $hadir = $items->count();

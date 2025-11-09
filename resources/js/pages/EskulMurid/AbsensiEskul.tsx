@@ -49,8 +49,6 @@ import { Button } from "@/components/ui/button";
     const page = usePage();
     const props = page.props as unknown as PageProps;
     const { auth, eskul, absensiHariIni } = props;
-
-    // 🔹 state user mirip HomeSiswa
     const [user, setUser] = useState<Student | null>(null);
 
     useEffect(() => {
@@ -58,7 +56,6 @@ import { Button } from "@/components/ui/button";
       if (storedUser && storedUser.id) {
         setUser(storedUser);
       } else {
-        // fallback dari inertia auth
         setUser({
           id: auth.user.id,
           nama: auth.user.name,
@@ -155,7 +152,7 @@ import { Button } from "@/components/ui/button";
 
         if (eskulDenganJadwal.length === 0) {
           return (
-            <div className="bg-white rounded-xl p-6 shadow">
+            <div className="bg-white text-gray-900 rounded-xl p-6 shadow">
               <p>Tidak ada absensi eskul hari ini.</p>
             </div>
           );
@@ -206,26 +203,26 @@ import { Button } from "@/components/ui/button";
                     </div>
 
                     {sudahAbsen ? (
-  <div className="w-full text-center py-2 rounded font-semibold text-white">
-    {a.kehadiran.some(k => 
-      k.user_id === auth.user.id && 
-      k.tanggal === new Date().toISOString().split("T")[0] &&
-      // Asumsikan kita bisa mendapatkan status dari kehadiran
-      // Anda mungkin perlu menyesuaikan query untuk mendapatkan status
-      k.status === "Tidak Hadir" // Ini perlu disesuaikan dengan struktur data Anda
-    ) ? ( 
-      <div className="w-full text-center py-2 rounded font-semibold bg-red-500 rounded-lg ">Tidak Hadir</div>
-    ) : (
-      <div className="w-full text-center py-2 rounded font-semibold bg-green-500 rounded-lg">Hadir</div>
-    )}
-  </div>
-) : (
-  <Link href={route("murid.eskul.kehadiran", a.id)}>
-    <Button className="w-full bg-orange-500 hover:bg-orange-600">
-      Isi Absen
-    </Button>
-  </Link>
-)}
+                    <div className="w-full text-center py-2 rounded font-semibold text-white">
+                      {a.kehadiran.some(k => 
+                        k.user_id === auth.user.id && 
+                        k.tanggal === new Date().toISOString().split("T")[0] &&
+                        // Asumsikan kita bisa mendapatkan status dari kehadiran
+                        // Anda mungkin perlu menyesuaikan query untuk mendapatkan status
+                        k.status === "Tidak Hadir" // Ini perlu disesuaikan dengan struktur data Anda
+                      ) ? ( 
+                        <div className="w-full text-center py-2 rounded font-semibold bg-red-500 rounded-lg ">Tidak Hadir</div>
+                      ) : (
+                        <div className="w-full text-center py-2 rounded font-semibold bg-green-500 rounded-lg">Hadir</div>
+                      )}
+                    </div>
+                  ) : (
+                    <Link href={route("murid.eskul.kehadiran", a.id)}>
+                      <Button className="w-full bg-orange-500 hover:bg-orange-600">
+                        Isi Absen
+                      </Button>
+                    </Link>
+                  )}
                   </div>
                 );
               })}
@@ -236,9 +233,6 @@ import { Button } from "@/components/ui/button";
     )}
   </div>
 )}
-
-
-        
         </div>
 
         <BottomNavbar />

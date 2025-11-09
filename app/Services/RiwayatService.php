@@ -11,7 +11,6 @@ use Illuminate\Support\Collection;
 class RiwayatService
 {
     /**
-     * Ambil data Sekolah untuk rentang tanggal (tanpa pagination; biar controller yang gabungkan & paginate).
      * @return array{summary: array, rows: array<int, array>}
      */
     public static function getSekolahRange(int $muridId, string $start, string $end): array
@@ -52,10 +51,6 @@ class RiwayatService
             'rows' => $rows,
         ];
     }
-
-    /**
-     * Ambil data Eskul untuk rentang tanggal (tanpa pagination).
-     */
     public static function getEskulRange(int $userId, string $start, string $end): array
     {
         $startAt = Carbon::parse($start)->startOfDay();
@@ -94,7 +89,6 @@ class RiwayatService
     }
 
     /**
-     * Event: pagination di sini (tidak perlu weekly/monthly).
      * @return array{meta: array, summary: array, rows: array{data: array, pagination: array}}
      */
     public static function getEvent(int $userId, ?string $q = null, int $page = 1, int $perPage = 20): array

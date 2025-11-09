@@ -47,7 +47,7 @@ class AbsensiEskulController extends Controller
         ], [
             'jam_mulai' => $jadwal->jam_mulai,
             'jam_selesai' => $jadwal->jam_selesai,
-            'is_recurring' => 0, // tandai ini absensi nyata
+            'is_recurring' => 0, 
         ]);
     }
 }

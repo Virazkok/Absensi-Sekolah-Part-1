@@ -46,11 +46,10 @@ class Event extends Model
         return $this->hasMany(EventAttendance::class);
     }
 
-    // ✅ Accessor baru untuk image_url
+   
     public function getImageUrlAttribute()
     {
         if ($this->image) {
-            // Kalau sudah berupa base64, langsung kembalikan
             if (str_starts_with($this->image, 'data:image')) {
                 return $this->image;
             }

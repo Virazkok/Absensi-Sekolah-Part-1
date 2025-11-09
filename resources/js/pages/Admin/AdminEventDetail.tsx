@@ -12,7 +12,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import React from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarIcon, ChevronLeft, ChevronRight } from "lucide-react";
+
+import { Textarea } from "@headlessui/react";
+import Sidebar from "@/components/sidebar";
+import { PageProps as InertiaPageProps } from '@inertiajs/core';
+
 
 interface EventDetail {
   id: number;
@@ -24,6 +29,7 @@ interface EventDetail {
   location?: string | null;
   image?: string | null;
   image_url?: string | null;
+  is_published: false,
 }
 
 interface Registration {
@@ -35,11 +41,13 @@ interface Registration {
 
 interface Attendance {
   id: number;
-  user: { name: string; kelas?: { name: string } };
+  user: {
+    nama: string; name: string; kelas?: { name: string } 
+};
   status: string;
 }
 
-interface PageProps {
+interface PageProps extends InertiaPageProps {
   auth: { user: any };
   event: EventDetail;
   registrations: Registration[];
@@ -56,6 +64,9 @@ export default function AdminEventDetail() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
   const [query, setQuery] = useState("");
+  const [confirmPublish, setConfirmPublish] = useState(false);
+  const [publishAction, setPublishAction] = useState<"publish" | "draft" | null>(null);
+
 
   const { data, setData, processing } = useForm({
     title: event.title || "",
@@ -96,11 +107,13 @@ export default function AdminEventDetail() {
   };
 
   const filteredRegs = registrations.filter((r) =>
-    r.user.name.toLowerCase().includes(query.toLowerCase())
-  );
+  (r.user?.name ?? "").toLowerCase().includes(query.toLowerCase())
+);
+
   const filteredAtts = attendances.filter((a) =>
-    a.user.name.toLowerCase().includes(query.toLowerCase())
-  );
+  (a.user?.name ?? "").toLowerCase().includes(query.toLowerCase())
+);
+
 
   const formatDate = (d?: string | null) => {
     if (!d) return "-";
@@ -119,7 +132,16 @@ export default function AdminEventDetail() {
     }
   };
 
-  // Tentukan sumber gambar event
+const togglePublish = (id: number) => {
+  router.patch(route("admin.events.toggle-publish", id), {}, {
+    preserveState: true,   
+    preserveScroll: true,  
+    onSuccess: () => {
+      console.log("Status publish berhasil diubah");
+    },
+  });
+};
+
   const eventImageSrc =
     event.image_url ||
     (event.image ? `/storage/${event.image}` : "");
@@ -146,24 +168,7 @@ export default function AdminEventDetail() {
       <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
         <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
-          <nav className="space-y-2 text-sm">
-            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--dashboard-lineW.svg" alt="" />Dashboard</div>
-            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/events')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/eskul')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
-            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
-          </nav>
-        </aside>
+        <Sidebar />
         {/* ======= Event Card ======= */}
         <main className="flex-1 overflow-x-auto p-7 pt-3">
            {/* Header */}
@@ -273,19 +278,19 @@ export default function AdminEventDetail() {
                   <th className="py-2 px-3">Tanggal Daftar</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredRegs.map((r, idx) => (
-                  <tr key={r.id} className="border-t">
-                    <td className="py-3 px-3 text-gray-600">
-                      {(currentPage - 1) * itemsPerPage + idx + 1}
-                    </td>
-                    <td className="py-3 px-3">{r.user.name}</td>
-                    <td className="py-3 px-3">{r.user.kelas?.name || "-"}</td>
-                    <td className="py-3 px-3">{r.sport_category || "-"}</td>
-                    <td className="py-3 px-3">{r.created_at ? formatDate(r.created_at) : "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
+             <tbody>
+              {dataToShow.map((r, idx) => (
+                <tr key={r.id} className="border-t">
+                  <td className="py-3 px-3 text-gray-600">
+                    {(currentPage - 1) * itemsPerPage + idx + 1}
+                  </td>
+                  <td className="py-3 px-3">{r.user.name}</td>
+                  <td className="py-3 px-3">{r.user.kelas?.name || "-"}</td>
+                  <td className="py-3 px-3">{r.sport_category || "-"}</td>
+                  <td className="py-3 px-3">{r.created_at ? formatDate(r.created_at) : "-"}</td>
+                </tr>
+              ))}
+            </tbody>
             </table>
           ) : (
             <table className="min-w-full text-sm">
@@ -297,185 +302,248 @@ export default function AdminEventDetail() {
                   <th className="py-2 px-3">Status</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredAtts.map((a, idx) => (
-                  <tr key={a.id} className="border-t">
-                   <td className="py-3 px-3 text-gray-600">
-                      {(currentPage - 1) * itemsPerPage + idx + 1}
-                    </td>
-                    <td className="py-3 px-3">{a.user.name}</td>
-                    <td className="py-3 px-3">{a.user.kelas?.name || "-"}</td>
-                    <td className="py-3 px-3">{a.status}</td>
-                  </tr>
-                ))}
-              </tbody>
+            <tbody>
+              {attendances.map((a, idx) => (
+                <tr key={a.id} className="border-t">
+                  <td className="py-3 px-3 text-gray-600">
+                    {idx + 1}
+                  </td>
+                  <td className="py-3 px-3">{a.display_name}</td>
+                  <td className="py-3 px-3">{a.kelas_name}</td>
+                  <td className="py-3 px-3">{a.status}</td>
+                </tr>
+              ))}
+            </tbody>
             </table>
           )}
-          
         </div>
 
         {/* Pagination Control */}
-<div className="flex justify-between mt-4">
-  {/* Kiri: optional tombol download / info */}
-  <div />
+        <div className="flex justify-between mt-4">
+          {/* Kiri: optional tombol download / info */}
+          <div />
 
-  {/* Kanan: Pagination (selalu tampil) */}
-  <div className="flex items-center gap-1 border rounded-full px-3 py-1 bg-white shadow-sm">
-    <button
-      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-      disabled={currentPage === 1}
-      className="p-1 text-gray-600 hover:bg-gray-100 rounded-full disabled:opacity-40"
-    >
-      
-    </button>
-
-    {Array.from({ length: totalPages || 1 }, (_, i) => i + 1)
-      .filter((page) => {
-        if (page === 1 || page === (totalPages || 1)) return true;
-        if (page >= currentPage - 2 && page <= currentPage + 2) return true;
-        return false;
-      })
-      .map((page, idx, arr) => {
-        const prev = arr[idx - 1];
-        const showDots = prev && page - prev > 1;
-        return (
-          <React.Fragment key={page}>
-            {showDots && <span className="px-2 text-gray-400">…</span>}
+          {/* Kanan: Pagination (selalu tampil) */}
+          <div className="flex items-center gap-1 border rounded-full px-3 py-1 bg-white shadow-sm">
             <button
-              onClick={() => setCurrentPage(page)}
-              className={`px-3 py-1.5 rounded-full transition-all ${
-                currentPage === page
-                  ? "bg-orange-400 text-white"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1 text-gray-600 hover:bg-gray-100 rounded-full disabled:opacity-40"
             >
-              {page}
+              
             </button>
-          </React.Fragment>
-        );
-      })}
 
-    <button
-      onClick={() => setCurrentPage((p) => Math.min(totalPages || 1, p + 1))}
-      disabled={currentPage === (totalPages || 1)}
-      className="p-1 text-gray-600 hover:bg-gray-100 rounded-full disabled:opacity-40"
-    >
-      
-    </button>
-  </div>
-</div>
+            {Array.from({ length: totalPages || 1 }, (_, i) => i + 1)
+              .filter((page) => {
+                if (page === 1 || page === (totalPages || 1)) return true;
+                if (page >= currentPage - 2 && page <= currentPage + 2) return true;
+                return false;
+              })
+              .map((page, idx, arr) => {
+                const prev = arr[idx - 1];
+                const showDots = prev && page - prev > 1;
+                return (
+                  <React.Fragment key={page}>
+                    {showDots && <span className="px-2 text-gray-400">…</span>}
+                    <button
+                      onClick={() => setCurrentPage(page)}
+                      className={`px-3 py-1.5 rounded-full transition-all ${
+                        currentPage === page
+                          ? "bg-orange-400 text-white"
+                          : "text-gray-700 hover:bg-gray-100"
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
 
-
-        
-
-        
-
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages || 1, p + 1))}
+              disabled={currentPage === (totalPages || 1)}
+              className="p-1 text-gray-600 hover:bg-gray-100 rounded-full disabled:opacity-40"
+            >
+              
+            </button>
+          </div>
+        </div>
         {/* ======= Modal Edit Event ======= */}
-        <Dialog open={showModal} onOpenChange={setShowModal}>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Edit Event</DialogTitle>
-            </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label>Gambar Event</Label>
-                <Input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setData("image", e.target.files ? e.target.files[0] : null)
-                  }
-                />
-                <div className="mt-2">
-                  {previewUrl ? (
-                    <img src={previewUrl} className="w-48 h-28 object-cover rounded" alt="preview" />
-                  ) : (
-                    <img
-                      src={event.image ? `/storage/${event.image}` : "/images/default-event.png"}
-                      className="w-48 h-28 object-cover rounded"
-                      alt="event"
-                      onError={(e) => (e.currentTarget.src = "/images/default-event.png")}
-                    />
-                  )}
-                </div>
-              </div>
+    <Dialog open={showModal} onOpenChange={setShowModal}>
+      <DialogContent className="max-w-2xl rounded-2xl p-8 bg-white shadow-xl text-gray-900">
+        <DialogHeader className="mb-4">
+          <DialogTitle className="text-2xl font-bold text-gray-900">Edit Event</DialogTitle>
+        </DialogHeader>
 
-              <div>
-                <Label>Judul</Label>
-                <Input value={data.title} onChange={(e) => setData("title", e.target.value)} required />
-              </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Image Section */}
+          <div>
+            <Label className="text-gray-700 mb-2 block">Image Event</Label>
+            <div className="rounded-lg overflow-hidden border border-gray-200">
+              <img
+                src={previewUrl || (event.image ? `/storage/${event.image}` : "/default-avatar.png")}
+                alt="Event Preview"
+                className="w-full h-60 object-cover"
+                onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
+              />
+            </div>
+            <div className="mt-3 flex justify-between">
+              <Input
+                type="file"
+                id="imageUpload"
+                accept="image/*"
+                className="hidden"
+                onChange={(e: ChangeEvent<HTMLInputElement>) => setData("image", e.target.files ? e.target.files[0] : null)}
+              />
+             <button
+                type="button"
+                onClick={() => {
+                  setPublishAction(event.is_published ? "draft" : "publish");
+                  setConfirmPublish(true);
+                }}
+                className={`px-3 py-1 rounded text-xs font-medium ${
+                  event.is_published
+                    ? "bg-green-100 text-green-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {event.is_published ? "Published" : "Draft"}
+              </button>
 
-              <div>
-                <Label>Deskripsi</Label>
-                <textarea
-                  value={data.description}
-                  onChange={(e) => setData("description", e.target.value)}
-                  className="w-full rounded border-gray-300"
-                  rows={4}
-                  required
-                />
-              </div>
+              <Button
+                type="button"
+                onClick={() => document.getElementById("imageUpload")?.click()}
+                className="bg-purple-600 hover:bg-purple-700 text-white shadow-md"
+              >
+                Upload Image
+              </Button>
+            </div>
+          </div>
 
-              <div>
-                <Label>Lokasi</Label>
-                <Input
-                  value={data.location}
-                  onChange={(e) => setData("location", e.target.value)}
-                  placeholder="Contoh: Aula Sekolah"
-                />
-              </div>
-
-              <div>
-                <Label>Tipe Event</Label>
-                <select
-                  value={data.type}
-                  onChange={(e) => setData("type", e.target.value)}
-                  className="w-full rounded border-gray-300 p-2"
-                  required
-                >
-                  <option value="olahraga">Olahraga</option>
+          {/* Event Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Nama Event</Label>
+              <Input value={data.title} onChange={(e) => setData("title", e.target.value)} required />
+            </div>
+            <div>
+              <Label>Kategori</Label>
+              <select
+                value={data.type}
+                onChange={(e) => setData("type", e.target.value)}
+                className="w-full rounded-md border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              >
+                 <option value="olahraga">Olahraga</option>
                   <option value="non-olahraga">Non-olahraga</option>
                   <option value="pemberitahuan">Pemberitahuan</option>
-                </select>
-              </div>
+              </select>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Tanggal Mulai</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label>Deskripsi Event</Label>
+              <Textarea
+                value={data.description}
+                onChange={(e) => setData("description", e.target.value)}
+                rows={4}
+                placeholder="cth. Jelaskan tentang event anda di sini"
+              />
+            </div>
+            <div className="space-y-4">
+              <div>
+                <Label>Tanggal Mulai</Label>
+                <div className="relative">
                   <Input
-                    type="datetime-local"
+                    type="date"
                     value={data.start_date}
                     onChange={(e) => setData("start_date", e.target.value)}
-                    required
+                    className="pr-10"
                   />
-                </div>
-                <div>
-                  <Label>Tanggal Selesai</Label>
-                  <Input
-                    type="datetime-local"
-                    value={data.end_date}
-                    onChange={(e) => setData("end_date", e.target.value)}
-                    required
-                  />
+                  <CalendarIcon className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
                 </div>
               </div>
+              <div>
+                <Label>Tanggal Akhir</Label>
+                <div className="relative">
+                  <Input
+                    type="date"
+                    value={data.end_date}
+                    onChange={(e) => setData("end_date", e.target.value)}
+                    className="pr-10"
+                  />
+                  <CalendarIcon className="absolute right-3 top-3 h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+            </div>
+          </div>
 
-              <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setShowModal(false)}>
-                  Batal
-                </Button>
-                <Button type="submit" disabled={processing}>
-                  {processing ? "Menyimpan..." : "Simpan"}
-                </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+          <div>
+            <Label>Lokasi Event</Label>
+            <Input
+              value={data.location}
+              onChange={(e) => setData("location", e.target.value)}
+              placeholder="Contoh: Lapangan Utama Sekolah"
+            />
+          </div>
+
+          {/* Buttons */}
+          <DialogFooter className="flex justify-end gap-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="border-2 border-purple-500 text-purple-600 hover:bg-purple-50"
+              onClick={() => setShowModal(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="submit"
+              disabled={processing}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6"
+            >
+              {processing ? "Memproses..." : "Perbarui"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+
         
         </main>
       </div>
       </div>
+      <Dialog open={confirmPublish} onOpenChange={setConfirmPublish}>
+  <DialogContent className="max-w-sm rounded-lg">
+    <DialogHeader>
+      <DialogTitle className="text-lg font-semibold">
+        {publishAction === "publish" ? "Publish Event?" : "Ubah ke Draft?"}
+      </DialogTitle>
+    </DialogHeader>
+    <p className="text-gray-600 text-sm">
+      Apakah kamu yakin ingin {publishAction === "publish" ? "mempublikasikan" : "mengubah ke draft"} event ini?
+    </p>
+    <DialogFooter className="flex justify-end gap-3 mt-4">
+      <Button
+        variant="outline"
+        onClick={() => setConfirmPublish(false)}
+        className="border-gray-300 text-gray-600"
+      >
+        Batal
+      </Button>
+      <Button
+        onClick={() => {
+          togglePublish(event.id);
+          setConfirmPublish(false);
+        }}
+        className="bg-purple-600 hover:bg-purple-700 text-white"
+      >
+        Ya, Lanjutkan
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
     </AuthenticatedLayout>
   );
 }

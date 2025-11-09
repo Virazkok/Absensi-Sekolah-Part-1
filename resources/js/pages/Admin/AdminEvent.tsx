@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { usePage, Head, router } from "@inertiajs/react";
 import {
   DropdownMenu,
@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import ManageEventsModal from "./ManageEvents";
+import Sidebar from "@/Components/sidebar";
 
 interface Event {
   id: number;
@@ -23,16 +24,14 @@ interface PageProps {
   auth: { user: any };
   events: Event[];
 }
-type Props = any;
+
 export default function AdminEvent() {
-  const { props } = usePage<Props>();
-  const { user } = props;
-  const { events } = usePage<PageProps>().props;
+  const { props } = usePage<PageProps>();
+  const { auth, events } = props;
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [showModal, setShowModal] = useState(false);
-
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
       const matchSearch = e.title.toLowerCase().includes(search.toLowerCase());
@@ -43,6 +42,19 @@ export default function AdminEvent() {
       return matchSearch && matchStatus;
     });
   }, [events, search, filterStatus]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const PAGE_SIZE = 10;
+  const totalItems = filteredEvents.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+
+  const paginatedEvents = useMemo(() => {
+    const startIdx = (currentPage - 1) * PAGE_SIZE;
+    return filteredEvents.slice(startIdx, startIdx + PAGE_SIZE);
+  }, [filteredEvents, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterStatus, events]);
 
   const deleteEvent = (id: number) => {
     if (confirm("Apakah kamu yakin ingin menghapus event ini?")) {
@@ -55,48 +67,37 @@ export default function AdminEvent() {
       <Head title="Event Management" />
       <div className="flex">
         {/* Sidebar */}
-        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
-          <nav className="space-y-2 text-sm">
-            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
-            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/events')}
-              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--list-settings-lineW.svg" alt="" /> Event Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/eskul')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-community-line.svg" alt="" /> Ekstrakurikuler</div>
-            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
-          </nav>
-        </aside>
+        <Sidebar />
 
         {/* Main content */}
         <main className="flex-1 p-4">
           {/* Header */}
-          <div className="justify-between items-center mb-6">
-            {/* Header */}
           <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
             <h1 className="text-2xl font-bold">Event Management</h1>
             <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
               <div className="flex items-center gap-2 p-2">
-                <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
-                <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
+                <img
+                  src={
+                    auth?.user?.avatar ?? "/images/avatar-placeholder.png"
+                  }
+                  alt="avatar"
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+                <div className="text-[16px]">{auth?.user?.name ?? "Admin"}</div>
               </div>
               <div>
-              <button className="p-2 rounded bg-white">⚙️</button>
-              <button className="p-2 rounded bg-white">🔓</button>
+                <button className="p-2 rounded bg-white">⚙️</button>
+                <button className="p-2 rounded bg-white">🔓</button>
               </div>
-              
             </div>
           </div>
-          <div className="flex justify-between">
-            <p className="text-sm text-gray-600 mt-5">
-                Semua Event <span className="font-semibold">{events.length}</span>
-              </p>
+
+          {/* Filter */}
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-sm text-gray-600">
+              Semua Event{" "}
+              <span className="font-semibold">{filteredEvents.length}</span>
+            </p>
             <div className="flex items-center gap-3">
               <input
                 type="text"
@@ -114,7 +115,6 @@ export default function AdminEvent() {
                 <option value="published">Aktif</option>
                 <option value="draft">Tidak Aktif</option>
               </select>
-
               <Button
                 onClick={() => setShowModal(true)}
                 className="bg-[#8B5CF6] hover:bg-[#7C3AED] text-white font-medium px-4 py-2 rounded-lg"
@@ -123,45 +123,41 @@ export default function AdminEvent() {
               </Button>
             </div>
           </div>
-          </div>
 
           {/* Table */}
-          <div className=" rounded-xl bg-white border border-[#8B23ED] rounded-xl">
+          <div className="rounded-xl bg-white border border-[#8B23ED] overflow-hidden">
             <table className="min-w-full text-sm">
               <thead className="border-b">
                 <tr className="text-left text-gray-700 font-medium">
-                  <th className="py-3 px-4 w-60">No</th>
+                  <th className="py-3 px-4">No</th>
                   <th className="py-3 px-4">Tanggal Awal</th>
-                  <th className="py-3 px-4 ">Tanggal Akhir</th>
-                  <th className="py-3 px-4 ">Nama Event</th>
-                  <th className="py-3 px-4 ">Status</th>
-                  <th className="py-3 px-4  ">Aksi</th>
+                  <th className="py-3 px-4">Tanggal Akhir</th>
+                  <th className="py-3 px-4">Nama Event</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Aksi</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredEvents.length === 0 && (
+                {paginatedEvents.length === 0 && (
                   <tr>
                     <td colSpan={6} className="text-center text-gray-500 py-6">
                       Tidak ada event
                     </td>
                   </tr>
                 )}
-                {filteredEvents.map((event, index) => (
-                  <tr key={event.id} className="border-t hover:bg-[#FAF7FF] transition">
-                    <td className="py-3 px-4">{index + 1}</td>
+                {paginatedEvents.map((event, index) => (
+                  <tr
+                    key={event.id}
+                    className="border-t hover:bg-[#FAF7FF] transition"
+                  >
                     <td className="py-3 px-4">
-                      {new Date(event.start_date).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {(currentPage - 1) * PAGE_SIZE + index + 1}
                     </td>
                     <td className="py-3 px-4">
-                      {new Date(event.end_date).toLocaleDateString("id-ID", {
-                        day: "2-digit",
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {new Date(event.start_date).toLocaleDateString("id-ID")}
+                    </td>
+                    <td className="py-3 px-4">
+                      {new Date(event.end_date).toLocaleDateString("id-ID")}
                     </td>
                     <td className="py-3 px-4">{event.title}</td>
                     <td className="py-3 px-4">
@@ -175,13 +171,13 @@ export default function AdminEvent() {
                         {event.is_published ? "Aktif" : "Tidak Aktif"}
                       </span>
                     </td>
-                    <td className="py-3 px-3">
+                    <td className="py-3 px-4">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                         <Button
-                          variant="outline"
-                          size="sm"
-                          className=" bg-white border-none decoration-none hover:bg-gray-100 items-center "
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className=" bg-white border-none hover:bg-gray-100 items-center"
                           >
                             •••
                           </Button>
@@ -208,22 +204,37 @@ export default function AdminEvent() {
               </tbody>
             </table>
           </div>
+          <div className="flex justify-end mt-6">
+            <div className="flex items-center gap-2 border rounded-full px-3 py-1 bg-white shadow-sm">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((page) => {
+                  if (page === 1 || page === totalPages) return true;
+                  if (page >= currentPage - 2 && page <= currentPage + 2)
+                    return true;
+                  return false;
+                })
+                .map((page, index, visible) => {
+                  const prevPage = visible[index - 1];
+                  const showDots = prevPage && page - prevPage > 1;
 
-          {/* Pagination */}
-          <div className="flex justify-end mt-4 text-sm text-gray-600">
-            <div className="flex items-center gap-2">
-              {[1, 2, 3, 4, 5, 6].map((page) => (
-                <button
-                  key={page}
-                  className={`px-3 py-1 border rounded ${
-                    page === 1
-                      ? "bg-[#FF8A3D] text-white border-[#FF8A3D]"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  {page}
-                </button>
-              ))}
+                  return (
+                    <React.Fragment key={page}>
+                      {showDots && (
+                        <span className="px-2 text-gray-400">…</span>
+                      )}
+                      <button
+                        onClick={() => setCurrentPage(page)}
+                        className={`px-3 py-1.5 rounded-full transition-all duration-150 ${
+                          currentPage === page
+                            ? "bg-orange-400 text-white"
+                            : "text-gray-700 hover:bg-gray-100"
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
             </div>
           </div>
         </main>

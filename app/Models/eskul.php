@@ -14,8 +14,9 @@ class Eskul extends Model
     }
 
     public function absensiEskul()
-    {
-        return $this->hasMany(AbsensiEskul::class);
-    }
+{
+    return $this->hasMany(\App\Models\AbsensiEskul::class, 'eskul_id');
+}
+
     public function siswa() { return $this->belongsToMany(User::class, 'eskul_user', 'eskul_id', 'user_id'); }
 }

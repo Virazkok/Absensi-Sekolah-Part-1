@@ -22,11 +22,10 @@ class EventKehadiran extends Model
         'attended_at' => 'datetime',
     ];
 
-    protected $with = ['event', 'murid.kelas']; // auto eager load
+    protected $with = ['event', 'murid.kelas']; 
 
     public function event()
     {
-        // pakai withTrashed biar event soft delete tetap bisa diakses
         return $this->belongsTo(Event::class, 'event_id', 'id')->withTrashed();
     }
 

@@ -28,8 +28,6 @@ const PageProfile: React.FC = () => {
 
   useEffect(() => {
     axios.get("/api/student/me").then((res) => setUser(res.data));
-
-    // ambil daftar eskul yang diikuti murid
     axios.get("/api/student/eskuls").then((res) => setEskuls(res.data));
   }, []);
 
@@ -102,8 +100,6 @@ const PageProfile: React.FC = () => {
               <option value="sekolah">Kehadiran Sekolah</option>
               <option value="eskul">Kehadiran Eskul</option>
             </select>
-
-            
           </div>
 
           {/* Overview Kehadiran */}

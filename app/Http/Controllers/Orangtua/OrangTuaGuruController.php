@@ -14,16 +14,11 @@ use Illuminate\Support\Facades\Log;
 
 class OrangTuaGuruController extends Controller
 {
-    // Dashboard Orang Tua - Guru
+    
     public function dashboard()
     {
         return Inertia::render('OrangTua/ParentTeacherDashboard');
     }
-
-    /**
-     * Attendance history (riwayat kehadiran)
-     * Bisa dipanggil dari API atau Web
-     */
     public function attendanceHistory(Request $request)
     {
         if ($request->is('api/*')) {
@@ -33,8 +28,8 @@ class OrangTuaGuruController extends Controller
             $page     = max(1, (int)$request->query('page', 1));
             $perPage  = (int)$request->query('per_page', 10);
 
-            // ⏰ filter periode
-            $mode     = $request->query('mode', null); // weekly | monthly | semester
+            
+            $mode     = $request->query('mode', null); 
             $week     = (int) $request->query('week', 0);
             $month    = (int) $request->query('month', now()->month);
             $year     = (int) $request->query('year', now()->year);
@@ -57,8 +52,6 @@ class OrangTuaGuruController extends Controller
     }
 
     $baseQuery = $this->applyDateFilter($baseQuery, $mode, $week, $month, $year, $semester, 'tanggal');
-
-    // 🔥 Group per murid
    $grouped = $baseQuery->get()->groupBy('user_id')->map(function ($rows) {
     $murid = $rows->first()->user->murid ?? null;
     return [
@@ -107,9 +100,7 @@ class OrangTuaGuruController extends Controller
         $baseQuery, $mode, $week, $month, $year, $semester, 'attended_at'
     );
 
-    // 🔥 Group per murid + event
     $rows = $baseQuery->get();
-
 foreach ($rows as $row) {
     Log::info("Event debug", [
         'event_id' => $row->event_id,
@@ -143,7 +134,6 @@ foreach ($rows as $row) {
         ],
     ]);
 
-                    // di dalam switch (contoh sekolah)
 case 'sekolah':
 default:
     $baseQuery = Kehadiran::with(['murid.kelas', 'kelas']);
@@ -156,7 +146,7 @@ default:
 
     $baseQuery = $this->applyDateFilter($baseQuery, $mode, $week, $month, $year, $semester, 'tanggal');
 
-    // 🔥 Group per murid
+
    $grouped = $baseQuery->get()->groupBy('murid_id')->map(function ($rows) {
     $murid = $rows->first()->murid;
     return [
@@ -198,8 +188,6 @@ default:
                 return response()->json(['success' => false, 'message' => 'Server error'], 500);
             }
         }
-
-        // Web render
         $kelas = Kelas::all(['id', 'name']);
         $eskul = Eskul::all(['id', 'nama']);
 
@@ -208,10 +196,6 @@ default:
             'eskul' => $eskul,
         ]);
     }
-
-    /**
-     * Helper filter tanggal berdasarkan mode
-     */
     private function applyDateFilter($query, $mode, $week, $month, $year, $semester, $column = 'tanggal')
     {
         if ($mode === 'weekly') {
@@ -236,7 +220,6 @@ default:
         return $query;
     }
 
-    // Optional: daftar murid
     public function studentList()
     {
         return response()->json(['success' => true, 'message' => 'implement if needed']);

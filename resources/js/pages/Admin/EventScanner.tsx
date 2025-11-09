@@ -9,10 +9,12 @@ export default function EventScanner() {
   const [lastScanned, setLastScanned] = useState<LastScanned | null>(null);
 
   const handleScan = async (qrData: string) => {
-  let data: { token: string; user_id: number; event_id: number };
+  let data: {
+    qr_token: string; token: string; user_id: number; event_id: number 
+};
   try {
     data = JSON.parse(qrData);
-    if (!data.token || !data.user_id || !data.event_id) {
+    if (!data.qr_token || !data.user_id || !data.event_id) {
       toast.error('Token / user_id / event_id tidak lengkap di QR');
       return;
     }
@@ -32,7 +34,7 @@ export default function EventScanner() {
         'Content-Type': 'application/json',
         'X-XSRF-TOKEN': decodeURIComponent(getCookie('XSRF-TOKEN')),
       },
-      body: JSON.stringify(data),   // <-- no extra wrapper
+      body: JSON.stringify(data), 
     });
 
     const json = await res.json();

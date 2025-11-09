@@ -14,12 +14,12 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://absensi-sekolah-part-1-production.up.railway.app', // Ganti 127.0.0.1 → IP PC kamu
+        target: '127.0.0.1', // Ganti 127.0.0.1 → IP PC kamu
         changeOrigin: true,
         secure: false,
       },
       '/sanctum': {
-        target: 'https://absensi-sekolah-part-1-production.up.railway.app', // Sama di sini
+        target: '127.0.0.1', // Sama di sini
         changeOrigin: true,
         secure: false,
       },

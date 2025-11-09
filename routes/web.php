@@ -33,11 +33,6 @@ Route::get('/debug', function () {
         return $e->getMessage();
     }
 });
-
-
-    
-
-
 Route::get('/parent-teacher/dashboard', [OrangTuaGuruController::class, 'dashboard'])->name('parent.dashboard');
 Route::get('/parent-teacher/attendance-history', [OrangTuaGuruController::class, 'attendanceHistory']);
 Route::get('/parent-teacher/students', [OrangTuaGuruController::class, 'studentList']);
@@ -76,14 +71,24 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/Admin/Dashboard/rekap/{mode}', [DashboardController::class, 'rekap']);
     Route::get('/Admin/Dashboard/report/{mode}', [DashboardController::class, 'report']);
     Route::get('/Admin/dashboard/export/{type}', [DashboardController::class, 'export'])->name('admin.dashboard.export');
+    Route::get('/Admin/Scan/CheckIn', function () {
+        return Inertia::render('Admin/CheckInScanner');
+    })->name('admin.scan.checkIn');
+    Route::get('/Admin/Scan/CheckOut', function () {
+        return Inertia::render('Admin/CheckOutScanner');
+    })->name('admin.scan.checkOut');
+
+    Route::get('/Admin/Scan/Event', function () {
+        return Inertia::render('Admin/EventScanner');
+    })->name('admin.scan.Event');
     Route::get('/Admin/UserManagement', [UserManagementController::class, 'index'])->name('admin.user.management');
-      Route::get('/Admin/UserDetail/{id}', [UserManagementController::class, 'detail'])
+      Route::get('/Admin/UserManagement/UserDetail/{id}', [UserManagementController::class, 'detail'])
         ->name('admin.user.detail');
 
-    Route::get('/Admin/UserDetail/{id}/edit', [UserManagementController::class, 'edit'])
+    Route::get('/Admin/UserManagement/UserDetail/{id}/edit', [UserManagementController::class, 'edit'])
         ->name('admin.user.edit');
 
-    Route::put('/Admin/UserDetail/{id}', [UserManagementController::class, 'update'])
+    Route::put('/Admin/UserManagement/UserDetail/{id}', [UserManagementController::class, 'update'])
         ->name('admin.user.update');
 });
 
@@ -128,7 +133,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
 
-
+    Route::get('/eskulCoba', function () {
+        return Inertia::render('Admin/StatistikKehadiran');});
 
     
 
@@ -140,6 +146,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/murid/home', [MuridController::class, 'dashboard'])->name('murid.home');
         Route::get('/murid/home/qr/checkIn', [MuridController::class, 'index'])->name('murid.home.qr.checkIn');
         Route::get('/murid/home/qr/checkOut', [MuridController::class, 'index'])->name('murid.home.qr.checkOut');
+        Route::get('/murid/home/qr', [MuridController::class, 'index'])->name('murid.home.qr');
     });
     Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/murid/eskul', [EskulController::class, 'index'])->name('murid.eskul');
@@ -148,47 +155,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/murid/eskul/kehadiran/{absensi}', [EskulController::class, 'submitKehadiran'])
         ->name('murid.eskul.kehadiran.submit');
     });
-        
-    // routes/web.php (tambahkan di bawah semua route yang sudah ada)
-
-    // web.php
-    // web.php  (tambahkan setelah route /murid/eskul)
     Route::middleware(['auth'])->group(function () {
-        // Murid routes
         Route::get('/murid/events', [EventController::class, 'index'])->name('events.index');
         Route::get('/murid/events/{id}/detailEvent', [EventController::class, 'detailEvent'])
             ->name('events.event-detail');
         Route::get('/murid/events/{event}/register', [EventController::class, 'showRegistrationForm'])->name('events.register.form');
         Route::post('/murid/events/{event}/register', [EventController::class, 'register'])->name('events.register');
-        // Di web.php
         Route::post('/murid/events/{event}/qr', [EventController::class, 'generateQR'])
-        ->name('events.qr') // Pastikan ada nama route
+        ->name('events.qr') 
         ->middleware(['web', 'auth']);
         Route::get('/murid/events/{event}/confirmation', [EventController::class, 'showConfirmation'])->name('events.confirmation');
-        Route::get('/events/{event}/qr', [EventController::class, 'showQR'])->name('events.qr.show');
+        Route::get('murid/events/{event}/qr', [EventController::class, 'showQR'])->name('events.qr.show');
     });
 
         
 
     Route::middleware(['auth', 'verified'])->group(function () {
-    // Halaman Profile
     Route::get('/murid/profil', function () {
         return Inertia::render('ProfileMurid/PageProfile'); 
     })->name('profile');
-
-    // Halaman Edit Profile
     Route::get('/murid/edit-profile', function () {
         return Inertia::render('ProfileMurid/EditProfile'); 
     })->name('profile.edit');
 });
-    // routes/web.php
-
-    // Untuk peserta
-    Route::get('/events/{event}', [EventController::class, 'detail'])
+    Route::get('murid/events/{event}', [EventController::class, 'detail'])
         ->middleware(['auth', 'verified'])
         ->name('events.detail');
-
-    // Untuk panitia/admin
     Route::get('/events/{event}/scan', [EventController::class, 'scanPage'])
         ->middleware(['auth', 'verified', 'can:admin'])
         ->name('events.scan.page');

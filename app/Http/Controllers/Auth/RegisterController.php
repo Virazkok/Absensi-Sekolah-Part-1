@@ -25,7 +25,7 @@ class RegisterController extends Controller
         
     ]);
 
-    // 1️⃣ Buat murid dulu
+
     $murid = Murid::create([
         'nis'      => $validated['nis'],
         'nama'     => $validated['name'],
@@ -35,7 +35,7 @@ class RegisterController extends Controller
         'qr_token' => Str::uuid(),
     ]);
 
-    // 2️⃣ Buat user, ambil nis dari murid
+
     $user = User::create([
         'name'     => $validated['name'],
         'username' => $validated['username'],
@@ -51,12 +51,11 @@ class RegisterController extends Controller
         'eskul_siswa3_id' => $validated['eskul_siswa3_id'] ?? null,
     ]);
 
-    // 3️⃣ Update murid → hubungkan ke user
+
     $murid->update([
         'user_id' => $user->id
     ]);
 
-    // 4️⃣ Masukkan eskul ke pivot murid_eskul
     $eskulIds = array_filter([
         $validated['eskul_siswa1_id'] ?? null,
         $validated['eskul_siswa2_id'] ?? null,

@@ -6,7 +6,8 @@ import { Student } from '@/types';
 import { Head } from '@inertiajs/react';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL =  window.location.origin;
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+
 
 const HomeSiswa = () => {
   /* ---------- STATE ---------- */
@@ -29,7 +30,7 @@ const HomeSiswa = () => {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
     if (storedUser && storedUser.id) {
-      console.log("📦 User dari localStorage:", storedUser); // DEBUG
+      console.log(" User dari localStorage:", storedUser); // DEBUG
       setUser(storedUser);
     }
   }, []);
@@ -85,8 +86,6 @@ const HomeSiswa = () => {
     };
 
     fetchPresensi();
-    // const interval = setInterval(fetchPresensi, 5000);
-    // return () => clearInterval(interval);
   }, [user]);
 
 
@@ -108,9 +107,9 @@ const HomeSiswa = () => {
     const minute = time.getMinutes();
     const totalMinutes = hour * 60 + minute;
 
-    const startCheckIn = 7 * 60 + 0; 
+    const startCheckIn = 1 * 60 + 0; 
     const endCheckIn = 20 * 60 + 4;
-    const startCheckOut = 21 * 60 + 0;
+    const startCheckOut = 1 * 60 + 0;
     const endCheckOut = 22 * 60 + 4;
 
     if (isCheckedIn && !isCheckedOut && totalMinutes >= endCheckOut) {
@@ -137,7 +136,7 @@ const HomeSiswa = () => {
       }
       return (
         <button
-          onClick={() => (window.location.href = '/murid/home/qr/checkIn')}
+          onClick={() => (window.location.href = '/murid/home/qr?mode=in')}
           className="mt-5 w-[160px] h-[160px] rounded-full bg-[#34A853] text-white flex items-center justify-center 
                      text-base font-normal leading-none 
                      shadow-[0px_0px_1px_20px_rgba(144,221,165,100),0px_0px_30px_35px_rgba(144,221,165,100)]"
@@ -159,7 +158,7 @@ const HomeSiswa = () => {
     if (isCheckedIn && !isCheckedOut && totalMinutes >= startCheckOut && totalMinutes < endCheckOut) {
       return (
         <button
-          onClick={() => (window.location.href = '/murid/home/qr/checkOut')}
+         onClick={() => (window.location.href = '/murid/home/qr?mode=out')}
           className="mt-10 w-[180px] h-[180px] rounded-full bg-[#A22C29] text-white flex items-center justify-center 
                       text-base font-normal leading-none 
                       shadow-[0px_0px_1px_20px_rgba(209,74,74,100),0px_0px_30px_35px_rgba(209,74,74,100)]"

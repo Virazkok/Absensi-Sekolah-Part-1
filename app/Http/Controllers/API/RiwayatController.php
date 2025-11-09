@@ -16,7 +16,7 @@ class RiwayatController extends Controller
     public function index(Request $request)
     {
         try {
-            // Load user + relasi murid
+            
             $user = Auth::user()->load('murid');
 
             if (!$user) {
@@ -91,7 +91,7 @@ class RiwayatController extends Controller
         ->get()
         ->map(fn($item) => [
             'id' => $item->id,
-            'tanggal' => $item->tanggal, // Hanya tanggal, tanpa jam
+            'tanggal' => $item->tanggal,
             'jam_masuk' => $item->jam_masuk ?? '-',
             'jam_keluar' => $item->jam_keluar ?? '-',
             'kehadiran' => $item->kehadiran ?? 'unknown'
@@ -111,7 +111,7 @@ private function getRiwayatEskul($user, $mode, $week, $month, $year)
         ->map(function($item) {
             return [
                 'id' => $item->id,
-                'tanggal' => $item->tanggal, // Hanya tanggal, tanpa jam
+                'tanggal' => $item->tanggal, 
                 'status' => $item->status ?? 'unknown',
                 'eskul_name' => $item->absensi->eskul->nama ?? 'Eskul Tidak Diketahui'
             ];
@@ -138,7 +138,7 @@ private function getRiwayatEvent($user)
 
   private function applyDateFilter($query, $mode, $dateColumn = 'tanggal', $week = 0, $month = null, $year = null)
 {
-    // Pastikan parameter numerik
+   
     $week = (int)$week;
     $month = $month !== null ? (int)$month : null;
     $year = $year !== null ? (int)$year : null;
@@ -149,12 +149,7 @@ private function getRiwayatEvent($user)
     switch ($mode) {
         case 'weekly':
             Log::info('Weekly mode, week offset: ' . $week);
-            
-            // PERBAIKAN: Hitung tanggal berdasarkan offset minggu yang benar
-            // $week = 0 (minggu ini), -1 (minggu lalu), 1 (minggu depan), dst.
             $start = $now->copy()->startOfWeek();
-            
-            // Tambahkan offset minggu (bisa negatif untuk minggu lalu)
             if ($week !== 0) {
                 $start->addWeeks($week);
             }
@@ -166,12 +161,8 @@ private function getRiwayatEvent($user)
             
         case 'monthly':
             Log::info('Monthly mode, month: ' . $month . ', year: ' . $year);
-            
-            // Gunakan bulan dan tahun yang dipilih atau bulan/tahun sekarang
             $month = $month ?: $now->month;
             $year = $year ?: $now->year;
-            
-            // Validasi bulan dan tahun
             if ($month < 1 || $month > 12) {
                 $month = $now->month;
             }

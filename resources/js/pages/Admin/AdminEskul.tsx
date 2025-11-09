@@ -11,6 +11,7 @@ import CreateEskulModal from "./AdminEskulCreate";
 import EditEskulModal from "./AdminEskulDetail";
 import AddMemberModal from "./AdminEskulAddAnggota";
 import { Student } from "@/types";
+import Sidebar from "@/Components/sidebar";
 
 interface Siswa {
   id: number;
@@ -115,24 +116,7 @@ export default function AdminEskul() {
       <Head title="Ekstrakurikuler" />
       <div className="flex">
         {/* Sidebar */}
-        <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
-          <nav className="space-y-2 text-sm">
-            <div onClick={() => (window.location.href = '/Admin/Dashboard')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--dashboard-line.svg" alt="" />Dashboard</div>
-            <div onClick={() => (window.location.href = '/Admin/UserManagement')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--user-settings-line.svg" alt="" /> User Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/events')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--list-settings-line.svg" alt="" /> Event Manajemen</div>
-            <div onClick={() => (window.location.href = '/admin/eskul')}
-              className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"><img src="/icons/ri--user-community-lineW.svg" alt="" /> Ekstrakurikuler</div>
-            <div onClick={() => (window.location.href = '/admin/riwayat-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--history-line.svg" alt="" /> Riwayat Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/statistik-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--pie-chart-2-line.svg" alt="" /> Statistik Kehadiran</div>
-            <div onClick={() => (window.location.href = '/admin/laporan-kehadiran')}
-              className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"><img src="/icons/ri--file-text-line.svg" alt="" /> Laporan</div>
-          </nav>
-        </aside>
+        <Sidebar />
 
         {/* Main Content */}
         <main className="flex-1 p-6">

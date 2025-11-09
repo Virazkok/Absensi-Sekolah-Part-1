@@ -6,7 +6,8 @@ import InputError from '@/components/input-error';
 import { Input } from '@/components/ui/input';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL =  window.location.origin;
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+
 
 type LoginForm = {
   email: string;

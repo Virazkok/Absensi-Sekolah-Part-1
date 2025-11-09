@@ -14,12 +14,12 @@ class ApiMuridOverviewController extends Controller
     public function index(Request $request)
     {
         $user = Auth::user();
-        $murid = $user->murid; // relasi ke murid
-        $type = $request->query('type', 'sekolah'); // default sekolah
-        $filter = $request->query('filter', 'bulan_ini'); // default bulan ini
-        $eskulId = $request->query('eskul_id'); // opsional
+        $murid = $user->murid; 
+        $type = $request->query('type', 'sekolah'); 
+        $filter = $request->query('filter', 'bulan_ini'); 
+        $eskulId = $request->query('eskul_id'); 
 
-        // Tentukan tanggal filter
+       
         if ($filter === 'bulan_ini') {
             $startDate = Carbon::now()->startOfMonth();
             $endDate   = Carbon::now()->endOfMonth();
@@ -31,7 +31,7 @@ class ApiMuridOverviewController extends Controller
             $endDate   = null;
         }
 
-        // Pilih model berdasarkan type
+       
         if ($type === 'eskul') {
             $query = KehadiranEskul::where('user_id', $user->id);
 
@@ -42,7 +42,7 @@ class ApiMuridOverviewController extends Controller
             }
 
         } else {
-            // default: sekolah
+            
             if (!$murid) {
                 return response()->json([
                     'error' => 'Data murid tidak ditemukan'
@@ -58,11 +58,11 @@ class ApiMuridOverviewController extends Controller
 
         $records = $query->get();
 
-        // === Gunakan kolom sesuai type ===
+        
         if ($type === 'eskul') {
-            $field = 'status'; // di kehadiran_eskuls
+            $field = 'status'; 
         } else {
-            $field = 'kehadiran'; // di kehadiran (sekolah)
+            $field = 'kehadiran'; 
         }
 
         $total = $records->count();
@@ -72,7 +72,7 @@ class ApiMuridOverviewController extends Controller
 
         $percentage = $total > 0 ? round(($hadir / $total) * 100, 2) : 0;
 
-        // Predikat sesuai aturan
+        
         if ($percentage < 50) {
             $predikat = "Kurang";
         } elseif ($percentage >= 50 && $percentage <= 60) {

@@ -45,7 +45,7 @@ class RegisteredUserController extends Controller
         'role' => 'required|string|max:255',
     ]);
 
-    // 1️⃣ Buat murid dulu
+
     $murid = Murid::create([
         'nis' => $request->nis,
         'nama' => $request->name,
@@ -55,7 +55,7 @@ class RegisteredUserController extends Controller
         'qr_token' => null,
     ]);
 
-    // 2️⃣ Buat user, nis diisi dengan murid->id (FK)
+
     $user = User::create([
         'name' => $request->name,
         'username' => $request->username,
@@ -63,7 +63,7 @@ class RegisteredUserController extends Controller
         'password' => Hash::make($request->password),
         'kelas_id' => $request->kelas_id,
         'keahlian' => $request->keahlian,
-        'nis' => $murid->id, // bukan $request->nis, tapi ID murid
+        'nis' => $murid->id, 
         'eskul_siswa1_id' => $request->eskul_siswa1_id,
         'eskul_siswa2_id' => $request->eskul_siswa2_id,
         'eskul_siswa3_id' => $request->eskul_siswa3_id,

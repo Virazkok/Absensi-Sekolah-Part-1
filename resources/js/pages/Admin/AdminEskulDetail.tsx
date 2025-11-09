@@ -14,66 +14,78 @@ const days = [
 ];
 
 export default function EditEskulModal({ eskul, onClose }: any) {
-  // 🔍 Baca semua kemungkinan struktur data jadwal dari backend
   const extractSchedules = (eskulData: any) => {
-  if (!eskulData) return [];
+    if (!eskulData) return [];
 
-  const possibleSchedules =
-    eskulData.schedules ||
-    eskulData.jadwal_latihan ||
-    eskulData.absensiEskul || // ✅ data dari backend
-    eskulData.absensi_eskul ||
-    [];
+    if (Array.isArray(eskulData.schedules) && eskulData.schedules.length > 0) {
+      return eskulData.schedules.map((s: any) => ({
+        day_of_week: Number(s.day_of_week),
+        jam_mulai: s.jam_mulai ?? "",
+        jam_selesai: s.jam_selesai ?? "",
+      }));
+    }
 
-  return possibleSchedules.map((s: any) => ({
-    day_of_week: Number(s.day_of_week),
-    jam_mulai: s.jam_mulai || "",
-    jam_selesai: s.jam_selesai || "",
-  }));
-};
+    if (Array.isArray(eskulData.absensiEskul) && eskulData.absensiEskul.length > 0) {
+      return eskulData.absensiEskul
+        .filter((a: any) => a.is_recurring || a.day_of_week !== undefined)
+        .map((s: any) => ({
+          day_of_week: Number(s.day_of_week),
+          jam_mulai: s.jam_mulai ?? "",
+          jam_selesai: s.jam_selesai ?? "",
+        }));
+    }
 
+    if (Array.isArray(eskulData.jadwal_latihan) && eskulData.jadwal_latihan.length > 0) {
+      return eskulData.jadwal_latihan.map((s: any) => ({
+        day_of_week: Number(s.day_of_week),
+        jam_mulai: s.jam_mulai ?? "",
+        jam_selesai: s.jam_selesai ?? "",
+      }));
+    }
 
-useEffect(() => {
-  console.log("Eskul diterima di modal:", eskul);
-}, [eskul]);
-
-
+    return [];
+  };
 
   const { data, setData, patch, processing } = useForm<any>({
     _method: "PATCH",
     nama: eskul?.nama || "",
-    schedules: extractSchedules(eskul),
+    schedules: extractSchedules(eskul) || [],
   });
 
-  // 🔁 Update form bila eskul berubah
   useEffect(() => {
     setData({
       _method: "PATCH",
       nama: eskul?.nama || "",
-      schedules: extractSchedules(eskul),
+      schedules: extractSchedules(eskul) || [],
     });
   }, [eskul]);
 
   const toggleDay = (day: number) => {
-    const exists = data.schedules.some((s: any) => s.day_of_week === day);
+    const schedules = data.schedules ?? [];
+    const exists = schedules.some((s: any) => Number(s.day_of_week) === day);
     if (exists) {
       setData(
         "schedules",
-        data.schedules.filter((s: any) => s.day_of_week !== day)
+        schedules.filter((s: any) => Number(s.day_of_week) !== day)
       );
     } else {
       setData("schedules", [
-        ...data.schedules,
+        ...schedules,
         { day_of_week: day, jam_mulai: "", jam_selesai: "" },
       ]);
     }
   };
 
-  const updateTime = (day: number, field: "jam_mulai" | "jam_selesai", value: string) => {
+  const updateTime = (
+    day: number,
+    field: "jam_mulai" | "jam_selesai",
+    value: string
+  ) => {
+    const schedules = data.schedules ?? [];
     setData(
       "schedules",
-      data.schedules.map((s: any) =>
-        s.day_of_week === day ? { ...s, [field]: value } : s
+      schedules.map((s: any) =>
+        Number(s.day_of_week) === Number(day) ? { ...s, [field]: value } : s
       )
     );
   };
@@ -116,7 +128,9 @@ useEffect(() => {
                 <label key={d.value} className="flex items-center gap-1">
                   <input
                     type="checkbox"
-                    checked={data.schedules.some((s: any) => Number(s.day_of_week) === d.value)}
+                    checked={(data.schedules ?? []).some(
+                      (s: any) => Number(s.day_of_week) === d.value
+                    )}
                     onChange={() => toggleDay(d.value)}
                   />
                   {d.label}
@@ -128,12 +142,12 @@ useEffect(() => {
           {/* Jam Latihan */}
           <div>
             <label className="block mb-1 font-medium">Waktu Latihan</label>
-            {data.schedules.length === 0 ? (
+            {(data.schedules ?? []).length === 0 ? (
               <p className="text-sm text-gray-500 italic mt-2">
                 Tidak ada jadwal latihan yang dipilih.
               </p>
             ) : (
-              data.schedules.map((s: any) => (
+              (data.schedules ?? []).map((s: any) => (
                 <div key={s.day_of_week} className="flex items-center gap-3 mt-2">
                   <span className="w-20">
                     {days.find((d) => d.value === Number(s.day_of_week))?.label}

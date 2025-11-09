@@ -11,6 +11,7 @@ import {
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Filter, FileDown } from "lucide-react";
 import axios from "axios";
+import Sidebar from "@/Components/sidebar";
 
 interface LaporanItem {
   nama: string;
@@ -32,15 +33,13 @@ const LaporanKehadiranPage: React.FC = () => {
 
   const [data, setData] = useState<LaporanItem[]>([]);
   const [search, setSearch] = useState("");
-
-  // === 🗓️ Hitung range minggu (Senin - Jumat) ===
   const getWeekRange = (date = new Date()) => {
     const start = new Date(date);
     const day = start.getDay();
-    const diff = start.getDate() - day + (day === 0 ? -6 : 1); // Senin
+    const diff = start.getDate() - day + (day === 0 ? -6 : 1); 
     const monday = new Date(start.setDate(diff));
     const friday = new Date(monday);
-    friday.setDate(monday.getDate() + 4); // Jumat
+    friday.setDate(monday.getDate() + 4); 
     return { start: monday, end: friday };
   };
 
@@ -51,8 +50,6 @@ const LaporanKehadiranPage: React.FC = () => {
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember",
   ];
-
-  // === 🧮 Predikat ===
   const getPredikat = (hadir: number, total: number): string => {
     if (total === 0) return "-";
     const percentage = (hadir / total) * 100;
@@ -61,8 +58,6 @@ const LaporanKehadiranPage: React.FC = () => {
     if (percentage >= 61 && percentage <= 74) return "Baik";
     return "Sangat Baik";
   };
-
-  // === 📊 Ambil Data ===
   const fetchData = async () => {
     try {
       let params: any = {};
@@ -74,34 +69,31 @@ const LaporanKehadiranPage: React.FC = () => {
           end_date: weekEnd.toISOString().split("T")[0],
         };
      } else if (range === "semester") {
-  let start: Date;
-  let end: Date;
+        let start: Date;
+        let end: Date;
 
-  if (semester === 1) {
-    // Semester 1 → Juli–Des tahun ini
-    start = new Date(tahun, 6, 2);  // Juli
-    end = new Date(tahun, 11, 31);  // Desember
-  } else {
-    // Semester 2 → Januari–Juni tahun berikutnya
-    start = new Date(tahun + 1, 0, 2);  // Januari tahun berikutnya
-    end = new Date(tahun + 1, 5, 31);   // Juni tahun berikutnya
-  }
+        if (semester === 1) {
+          start = new Date(tahun, 6, 2);  // Juli
+          end = new Date(tahun, 11, 31);  // Desember
+        } else {
+          start = new Date(tahun + 1, 0, 2);  // Januari tahun berikutnya
+          end = new Date(tahun + 1, 5, 31);   // Juni tahun berikutnya
+        }
 
-  params = {
-    range: "semester",
-    semester,
-    tahun,
-    start_date: start.toISOString().split("T")[0],
-    end_date: end.toISOString().split("T")[0],
-  };
-} else {
-  // ✅ tambahkan ini
-  params = {
-    range: "bulanan",
-    bulan,
-    tahun,
-  };
-}
+        params = {
+          range: "semester",
+          semester,
+          tahun,
+          start_date: start.toISOString().split("T")[0],
+          end_date: end.toISOString().split("T")[0],
+        };
+      } else {
+        params = {
+          range: "bulanan",
+          bulan,
+          tahun,
+        };
+      }
 
       const [resSekolah, resEskul, resEvent] = await Promise.all([
         axios.get("/api/laporan/sekolah", { params }),
@@ -112,29 +104,29 @@ const LaporanKehadiranPage: React.FC = () => {
       const map = new Map<string, LaporanItem>();
 
       const mergeData = (items: any[], type: "sekolah" | "eskul" | "event") => {
-  if (!Array.isArray(items)) return;
-  items.forEach((item) => {
-    const nama = item.nama || "-";
-    const existing = map.get(nama) || {
-      nama,
-      kelas: item.kelas || "-",
-      keahlian: item.kejuruan || item.keahlian || "-",
-      hadirSekolah: 0,
-      hadirEskul: 0,
-      hadirEvent: 0,
-      keterangan: "-",
+      if (!Array.isArray(items)) return;
+      items.forEach((item) => {
+        const nama = item.nama || "-";
+        const existing = map.get(nama) || {
+          nama,
+          kelas: item.kelas || "-",
+          keahlian: item.kejuruan || item.keahlian || "-",
+          hadirSekolah: 0,
+          hadirEskul: 0,
+          hadirEvent: 0,
+          keterangan: "-",
+        };
+
+        if (type === "sekolah") existing.hadirSekolah += item.hadir_sekolah || 0;
+        if (type === "eskul") existing.hadirEskul += item.hadir_ekskul || 0;
+        if (type === "event") existing.hadirEvent += item.hadir_event || 0;
+
+        map.set(nama, existing);
+      });
     };
 
-    if (type === "sekolah") existing.hadirSekolah += item.hadir_sekolah || 0;
-    if (type === "eskul") existing.hadirEskul += item.hadir_ekskul || 0;
-    if (type === "event") existing.hadirEvent += item.hadir_event || 0;
 
-    map.set(nama, existing);
-  });
-};
-
-
-      mergeData(resSekolah.data.data || [], "sekolah");
+mergeData(resSekolah.data.data || [], "sekolah");
 mergeData(resEskul.data.data || [], "eskul");
 mergeData(resEvent.data.data || [], "event");
 
@@ -224,59 +216,7 @@ mergeData(resEvent.data.data || [], "event");
   return (
     <div className="flex bg-gray-100 min-h-screen text-gray-900">
        {/* Sidebar */}
-      <aside className="hidden md:block md:w-60 bg-white p-4 shadow-lg min-h-screen">
-        <nav className="space-y-2 text-sm">
-          <div
-            onClick={() => (window.location.href = "/Admin/Dashboard")}
-            className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"
-          >
-            <img src="/icons/ri--dashboard-line.svg" alt="" />
-            Dashboard
-          </div>
-          <div
-            onClick={() => (window.location.href = "/Admin/UserManagement")}
-            className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"
-          >
-            <img src="/icons/ri--user-settings-line.svg" alt="" />
-            User Manajemen
-          </div>
-          <div
-            onClick={() => (window.location.href = "/admin/events")}
-            className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"
-          >
-            <img src="/icons/ri--list-settings-line.svg" alt="" />
-            Event Manajemen
-          </div>
-          <div
-            onClick={() => (window.location.href = "/admin/eskul")}
-            className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"
-          >
-            <img src="/icons/ri--user-community-line.svg" alt="" />
-            Ekstrakurikuler
-          </div>
-          <div
-            onClick={() => (window.location.href = "/admin/riwayat-kehadiran")}
-            className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"
-          >
-            <img src="/icons/ri--history-line.svg" alt="" />
-            Riwayat Kehadiran
-          </div>
-          <div
-            onClick={() => (window.location.href = "/admin/statistik-kehadiran")}
-            className="p-2 rounded hover:bg-gray-200 cursor-pointer flex items-center gap-2"
-          >
-            <img src="/icons/ri--pie-chart-2-line.svg" alt="" />
-            Statistik Kehadiran
-          </div>
-          <div
-            onClick={() => (window.location.href = "/admin/laporan-kehadiran")}
-            className="p-2 rounded bg-[#E86D1F] font-medium cursor-pointer text-white flex items-center gap-2"
-          >
-            <img src="/icons/ri--file-text-lineW.svg" alt="" />
-            Laporan
-          </div>
-        </nav>
-      </aside>
+        <Sidebar />
 
       {/* Main Content */}
       <main className="flex-1 p-8">
@@ -289,10 +229,10 @@ mergeData(resEvent.data.data || [], "event");
         </div>
 
         <Card className="border-2 border-purple-300 rounded-2xl bg-white shadow-sm">
-          <CardContent className="p-6">
+          <CardContent className="">
             {/* Filter Section */}
             
-              <div className="flex items-center gap-2 text-gray-700 font-semibold">
+              <div className="flex items-center gap-2 text-gray-700 font-semibold mb-5">
                 <Filter size={16} />
                 <span>Filter</span>
               </div>
@@ -300,34 +240,34 @@ mergeData(resEvent.data.data || [], "event");
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Button
-                    variant={range === "weekly" ? "default" : "outline"}
-                    className={`rounded-full ${range === "weekly" ? "bg-purple-600 text-white" : ""}`}
+                    variant={range === "weekly" ? "purple" : "pending"}
+                    className={`rounded-full ${range === "weekly" ? "bg-[#8B23ED] text-white border-2 border-[#8B23ED]" : "bg-white text-[#8B23ED] border-2 border-[#8B23ED]"}`}
                     onClick={() => setRange("weekly")}
                   >
                     Mingguan
                   </Button>
                   <Button
-                    variant={range === "monthly" ? "default" : "outline"}
-                    className={`rounded-full ${range === "monthly" ? "bg-purple-600 text-white" : ""}`}
+                    variant={range === "monthly" ? "purple" : "pending"}
+                    className={`rounded-full ${range === "monthly" ? "bg-[#8B23ED] text-white border-2 border-[#8B23ED]" : "bg-white text-[#8B23ED] border-2 border-[#8B23ED]"}`}
                     onClick={() => setRange("monthly")}
                   >
                     Bulanan
                   </Button>
                   <Button
-                    variant={range === "semester" ? "default" : "outline"}
-                    className={`rounded-full ${range === "semester" ? "bg-purple-600 text-white" : ""}`}
+                    variant={range === "semester" ? "purple" : "pending"}
+                    className={`rounded-full ${range === "semester" ? "bg-[#8B23ED] text-white border-2 border-[#8B23ED]" : "bg-white text-[#8B23ED] border-2 border-[#8B23ED]"}`}
                     onClick={() => setRange("semester")}
                   >
                     Semester
                   </Button>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex  items-center gap-2 ">
                   <Select>
-                    <SelectTrigger className="w-40">
+                    <SelectTrigger className="w-40 bg-white text-gray-900 border-2 border-[#8B23ED]">
                       <SelectValue placeholder="Semua Keahlian" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white text-gray-900 border-2 border-[#8B23ED]">
                       <SelectItem value="all">Semua Keahlian</SelectItem>
                       <SelectItem value="rpl">RPL</SelectItem>
                       <SelectItem value="tkj">TKJ</SelectItem>
@@ -335,7 +275,7 @@ mergeData(resEvent.data.data || [], "event");
                   </Select>
                   <Input
                     placeholder="Cari nama..."
-                    className="w-44"
+                    className="w-44 bg-white text-gray-900 border-2 border-[#8B23ED]"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -343,7 +283,7 @@ mergeData(resEvent.data.data || [], "event");
               </div>
 
             {/* Navigasi */}
-            <div className="flex items-center gap-2 mt-2 text-gray-900">
+            <div className="flex items-center gap-2 mt-2 text-gray-900 ">
               <Button variant="ghost" size="icon" onClick={handlePrev}>
                 <ChevronLeft size={18} />
               </Button>
@@ -368,10 +308,10 @@ mergeData(resEvent.data.data || [], "event");
 
             {/* Table */}
             <div className="overflow-x-auto text-gray-900">
-              <table className="w-full border-t border-gray-300 text-sm">
+              <table className="w-full border-b border-gray-300 text-sm">
                 <thead className="text-gray-600 border-b">
                   <tr>
-                    <th className="py-2 px-3 text-left">No</th>
+                    <th className="py-3 px-3 text-left">No</th>
                     <th className="py-2 px-3 text-left">Nama</th>
                     <th className="py-2 px-3 text-left">Kelas</th>
                     <th className="py-2 px-3 text-left">Keahlian</th>

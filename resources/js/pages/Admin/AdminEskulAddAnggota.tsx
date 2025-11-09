@@ -9,7 +9,7 @@ type UserPayload = {
   name: string;
   kelas?: { id: number; name: string } | null;
   eskuls_count: number;
-  eskuls_ids: number[]; // eskul ids currently in DB
+  eskuls_ids: number[];
 };
 
 export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void }) {
@@ -26,15 +26,12 @@ export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void 
   const [selectedEskulId, setSelectedEskulId] = useState<number | null>(null);
   const [selectedKelasId, setSelectedKelasId] = useState<'all' | number>('all');
   const [search, setSearch] = useState('');
-  // selectionsByEskul: eskulId -> array of userIds
   const [selectionsByEskul, setSelectionsByEskul] = useState<Record<number, number[]>>({});
 
-  // helper: count how many times user is selected across all eskuls in modal
   function totalSelectedForUser(userId: number) {
     return Object.values(selectionsByEskul).flat().filter((id) => id === userId).length;
   }
 
-  // filter users by kelas and search
   const filteredUsers = useMemo(() => {
     return users.filter((u) => {
       if (selectedKelasId !== 'all' && u.kelas?.id !== selectedKelasId) return false;
@@ -43,21 +40,15 @@ export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void 
     });
   }, [users, selectedKelasId, search]);
 
-  // check if a user is already in given eskul (from DB)
   function userAlreadyInEskul(user: UserPayload, eskulId: number) {
     return (user.eskuls_ids || []).includes(eskulId);
   }
 
-  // determine disabled state for checkbox for (userId, eskulId)
   function isCheckboxDisabled(user: UserPayload, eskulId: number) {
-    // if user already in that eskul => disabled
     if (userAlreadyInEskul(user, eskulId)) return true;
 
     const alreadySelectedInThisEskul = (selectionsByEskul[eskulId] || []).includes(user.id);
     const selectedCount = totalSelectedForUser(user.id);
-
-    // If not already selected in this eskul, and existing + selectedCount >= 3 then disabled
-    // This allows the checkbox in the eskul where user has been selected to remain togglable.
     if (!alreadySelectedInThisEskul && (user.eskuls_count + selectedCount) >= 3) {
       return true;
     }
@@ -66,21 +57,16 @@ export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void 
   }
 
   function toggleSelect(user: UserPayload, eskulId: number) {
-    // prefer using eskulId param so we can call from summary too
     if (!eskulId) {
       alert('Pilih eskul terlebih dahulu');
       return;
     }
-
-    // If user already in eskul (DB) we don't allow select
     if (userAlreadyInEskul(user, eskulId)) return;
 
     const disabled = isCheckboxDisabled(user, eskulId);
     if (disabled) {
-      // user can't be selected here (except if already selected in this eskul)
       const alreadySelectedInThisEskul = (selectionsByEskul[eskulId] || []).includes(user.id);
       if (!alreadySelectedInThisEskul) {
-        // show small warning
         alert(`${user.name} sudah mencapai batas eskul (3).`);
         return;
       }
@@ -92,13 +78,11 @@ export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void 
       if (set.has(user.id)) set.delete(user.id);
       else set.add(user.id);
       clone[eskulId] = Array.from(set);
-      // remove empty arrays to keep object small
       if (clone[eskulId].length === 0) delete clone[eskulId];
       return clone;
     });
   }
 
-  // display dynamic eskul_count: existing + totalSelectedForUser(userId)
   function displayEskulCount(user: UserPayload) {
     return `${user.eskuls_count + totalSelectedForUser(user.id)}/3`;
   }
@@ -118,13 +102,10 @@ export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void 
 
     Inertia.post(route('admin.eskul.addMembers'), payload, {
       onSuccess: () => {
-        // reload page agar data di frontend sinkron dengan DB (menampilkan eskuls_count terbaru)
         Inertia.visit(route('admin.eskul.index'));
       },
       onError: (errors) => {
-        // back-end akan mengembalikan 422 dengan list user errors jika melebihi batas
         if (errors && typeof errors === 'object') {
-          // show message sederhana
           alert('Beberapa siswa gagal ditambahkan. Periksa batas eskul (maks 3).');
         } else {
           alert('Gagal menyimpan anggota.');
@@ -230,8 +211,6 @@ export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void 
             </tbody>
           </table>
         </div>
-
-        {/* Ringkasan pilihan: tampilkan nama (kelas) */}
         <div className="mb-4">
           <h4 className="font-semibold mb-2">Ringkasan Pilihan</h4>
           {Object.keys(selectionsByEskul).length === 0 ? (
@@ -245,24 +224,23 @@ export default function AdminEskulAddAnggota({ onClose }: { onClose: () => void 
                   <div className="font-medium">{eskul?.nama ?? `Eskul ${eskulId}`}</div>
                   <div className="text-sm mt-1">
                     {userIds.length === 0 ? (
-  <p className="text-gray-500 text-sm">Belum ada anggota dipilih</p>
-) : (
-  <div className="flex flex-wrap gap-2 mt-2">
-    {userIds.map((uid) => {
-      const uu = users.find((x) => x.id === uid);
-      if (!uu) return null;
-      return (
-        <div
-          key={uid}
-          className="px-3 py-1 bg-gray-200 border border-gray-400 rounded-xl text-sm text-gray-800"
-        >
-          {uu.name} {uu.kelas ? `(${uu.kelas.name})` : ""}
-        </div>
-      );
-    })}
-  </div>
-)}
-
+                      <p className="text-gray-500 text-sm">Belum ada anggota dipilih</p>
+                    ) : (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {userIds.map((uid) => {
+                          const uu = users.find((x) => x.id === uid);
+                          if (!uu) return null;
+                          return (
+                            <div
+                              key={uid}
+                              className="px-3 py-1 bg-gray-200 border border-gray-400 rounded-xl text-sm text-gray-800"
+                            >
+                              {uu.name} {uu.kelas ? `(${uu.kelas.name})` : ""}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                 </div>
               );

@@ -21,7 +21,7 @@ class AdminRekapDashboardController extends Controller
         $type     = $request->query('type', 'sekolah');
         $eskulId  = $request->query('eskul_id');
 
-        // Tentukan rentang tanggal
+        
         if ($filter === 'bulan') {
             $startDate = Carbon::createFromDate($tahun, $bulan, 1)->startOfMonth();
             $endDate   = Carbon::createFromDate($tahun, $bulan, 1)->endOfMonth();
@@ -35,7 +35,7 @@ class AdminRekapDashboardController extends Controller
             }
         }
 
-        // Hitung jumlah hari aktif (Senin–Jumat)
+       
         $totalHariAktif = 0;
         $current = $startDate->copy();
         while ($current->lte($endDate)) {
@@ -45,20 +45,26 @@ class AdminRekapDashboardController extends Controller
             $current->addDay();
         }
 
-        // Ambil daftar murid
+        
         if ($type === 'eskul' && $eskulId) {
-            $muridList = Murid::with(['kelas', 'user'])
-                ->whereHas('user', function ($q) use ($eskulId) {
-                    $q->where('eskul_siswa1_id', $eskulId)
-                      ->orWhere('eskul_siswa2_id', $eskulId)
-                      ->orWhere('eskul_siswa3_id', $eskulId);
-                })
-                ->get();
+           $muridList = Murid::with(['kelas', 'user'])
+    ->whereHas('user', function ($q) use ($eskulId) {
+        $q->where('role', 'murid')
+          ->where(function ($sub) use ($eskulId) {
+              $sub->where('eskul_siswa1_id', $eskulId)
+                  ->orWhere('eskul_siswa2_id', $eskulId)
+                  ->orWhere('eskul_siswa3_id', $eskulId);
+          });
+    })
+    ->get();
+
         } else {
-            $muridList = Murid::with(['kelas', 'user'])->get();
+            $muridList = Murid::with(['kelas', 'user'])
+    ->whereHas('user', fn($q) => $q->where('role', 'murid'))
+    ->get();
         }
 
-        // Mapping data rekap + avatar
+        
         $rekap = $muridList->map(function ($murid) use ($startDate, $endDate, $type, $eskulId, $totalHariAktif) {
             if ($type === 'eskul') {
                 $kehadiran = KehadiranEskul::where('user_id', $murid->user_id)
@@ -77,7 +83,7 @@ class AdminRekapDashboardController extends Controller
 
             $persentase = $totalHariAktif > 0 ? round(($hadir / $totalHariAktif) * 100, 2) : 0;
 
-            // ✅ Tambahan logic avatar dari versi lama
+            
             $defaultAvatar = asset('default-avatar.png');
             $avatarUrl = $defaultAvatar;
 

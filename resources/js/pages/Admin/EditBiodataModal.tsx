@@ -18,14 +18,11 @@ export default function EditBiodataModal({ user, kelas, onClose }: any) {
     name: user.name || "",
     nis: String(user.nis || ""),
     kelas_id: user.kelas_id || "",
-    kejuruan: user.kejuruan || "",
+    keahlian: user.keahlian || "",
   });
-
-  
-
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    post(`/Admin/UserDetail/${user.id}`, {
+    post(`/Admin/UserManagement/UserDetail/${user.id}`, {
       onSuccess: () => {
         onClose();
         window.location.reload();
@@ -83,8 +80,8 @@ export default function EditBiodataModal({ user, kelas, onClose }: any) {
           <div className="grid gap-2">
             <Label>Kejuruan</Label>
             <Input
-              value={data.kejuruan}
-              onChange={(e) => setData("kejuruan", e.target.value)}
+              value={data.keahlian}
+              onChange={(e) => setData("keahlian", e.target.value)}
             />
           </div>
 

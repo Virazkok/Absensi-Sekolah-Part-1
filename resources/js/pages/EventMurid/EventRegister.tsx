@@ -65,29 +65,27 @@ export default function EventRegister({ event, auth, onClose }: Props) {
       </h2>
 
     {/* Informasi Peserta */}
-<div className="flex flex-col gap-3 mb-5">
-  <div>
-    <label className="text-sm text-gray-600">Nama</label>
-    <input
+    <div className="flex flex-col gap-3 mb-5">
+      <div>
+        <label className="text-sm text-gray-600">Nama</label>
+        <input
+          type="text"
+          value={auth.user.name}
+          readOnly
+          className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-100 cursor-not-allowed"
+        />
+      </div>
+      <div>
+        <label className="text-sm text-gray-600">Kelas</label>
+      <input
       type="text"
-      value={auth.user.name}
+      value={auth.user.kelas?.name || "-"}
       readOnly
-      className="w-full border border-gray-300 rounded px-3 py-2 text-sm bg-gray-100 cursor-not-allowed"
+      className="w-full border rounded p-2 bg-gray-100"
     />
-  </div>
-  <div>
-    <label className="text-sm text-gray-600">Kelas</label>
-   <input
-  type="text"
-  value={auth.user.kelas?.name || "-"}
-  readOnly
-  className="w-full border rounded p-2 bg-gray-100"
-/>
 
-  </div>
-</div>
-
-
+      </div>
+    </div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         {event.type === "olahraga" && (
           <>

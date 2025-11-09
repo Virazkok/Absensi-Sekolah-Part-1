@@ -59,14 +59,10 @@ class User extends Authenticatable
         return $this->hasOne(Murid::class, 'user_id');
     }
 
-    // akses nis langsung lewat relasi murid
     public function getMuridNisAttribute()
 {
     return $this->murid?->nis;
 }
-
-
-    // relasi ke event
     public function eventRegistrations()
     {
         return $this->hasMany(EventRegistration::class);

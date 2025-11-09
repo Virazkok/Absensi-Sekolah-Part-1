@@ -49,7 +49,7 @@ public function update(Request $request, $id)
 {
     $user = User::with('murid')->findOrFail($id);
 
-    // 💡 Tentukan mode berdasarkan field yang dikirim
+   
     $isBiodataUpdate = $request->has('kelas_id') && !$request->has('email');
 
     if ($isBiodataUpdate) {
@@ -58,20 +58,19 @@ public function update(Request $request, $id)
             'name' => 'required|string|max:255',
             'nis' => 'required|string|max:50',
             'kelas_id' => 'required|exists:kelas,id',
-            'kejuruan' => 'nullable|string|max:255',
+            'keahlian' => 'nullable|string|max:255',
         ]);
 
-        // Update data di tabel murid
+        
         if ($user->murid) {
             $user->murid->update([
                 'nama' => $request->name,
                 'nis' => $request->nis,
                 'kelas_id' => $request->kelas_id,
-                'keahlian' => $request->kejuruan,
+                'keahlian' => $request->keahlian,
             ]);
         }
 
-        // Sinkron juga sebagian field user
         $user->update([
             'name' => $request->name,
             'kelas_id' => $request->kelas_id,
@@ -89,12 +88,11 @@ $request->validate([
 
 $user->fill($request->only('email', 'role', 'status'));
 
-// jika password dikirim
+
 if ($request->filled('password')) {
     $user->password = Hash::make($request->password);
 }
 
-// handle eskul (maksimal 3)
 if ($request->has('eskul_ids')) {
     $eskulIds = array_pad($request->eskul_ids, 3, null); // isi kekurangan jadi null
     $user->eskul_siswa1_id = $eskulIds[0];
@@ -105,7 +103,7 @@ if ($request->has('eskul_ids')) {
 $user->save();
 
 
-        // sinkronisasi eskul
+        
         if ($request->has('eskul_ids')) {
             $user->eskuls()->sync($request->eskul_ids);
         }

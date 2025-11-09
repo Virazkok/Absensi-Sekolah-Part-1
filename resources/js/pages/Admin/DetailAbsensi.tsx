@@ -27,8 +27,6 @@ interface PageProps {
 export default function DetailAbsensi() {
   const { auth, absensi } = usePage().props as unknown as PageProps;
   const [editing, setEditing] = useState(false);
-
-  // edit form
   const { data, setData, put, processing, errors } = useForm({
     tanggal: absensi.tanggal,
     jam_mulai: absensi.jam_mulai,
@@ -64,12 +62,12 @@ export default function DetailAbsensi() {
                 <h3>{absensi.eskul?.nama ?? 'Tanpa Nama Eskul'}</h3>
                 <p>
                   {absensi.tanggal
-        ? new Date(absensi.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-    : 'Invalid Date'}
-</p>
-<span className={`... ${absensi.dipublish ? 'bg-green-100' : 'bg-yellow-100'}`}>
-  {absensi.dipublish ? 'Published' : 'Draft'}
-</span>
+                  ? new Date(absensi.tanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                  : 'Invalid Date'}
+              </p>
+              <span className={`... ${absensi.dipublish ? 'bg-green-100' : 'bg-yellow-100'}`}>
+                {absensi.dipublish ? 'Published' : 'Draft'}
+              </span>
               </div>
 
               {/* action buttons */}

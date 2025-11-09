@@ -199,7 +199,7 @@ const EditProfileOrtuGuru: React.FC<EditProfileOrtuGuruProps> = ({ auth }) => {
         </div>
 
         {/* Buttons */}
-        <div className="space-y-2 pb-20"> {/* pb-20 biar tidak ketutup navbar */}
+        <div className="space-y-2 pb-20"> 
           <button
             type="submit"
             className="w-full bg-orange-500 text-white py-2 rounded-lg text-sm font-medium shadow-md active:scale-[0.98] transition"

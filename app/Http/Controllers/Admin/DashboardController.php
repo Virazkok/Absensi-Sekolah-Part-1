@@ -19,12 +19,12 @@ class DashboardController extends Controller
     {
         $today = Carbon::today();
 
-        // 📊 Data dasar
+        //  Data dasar
         $total_users = User::where('role', 'murid')->count();
         $total_eskul = Eskul::count();
         $total_events = Event::count();
 
-        // 📅 Event (status prioritas)
+        //  Event (status prioritas)
         $events = Event::orderByRaw("
             CASE 
                 WHEN is_published = 1 AND end_date < ? THEN 1
@@ -53,13 +53,13 @@ class DashboardController extends Controller
                 return $event;
             });
 
-        // 📆 Hitung hari kerja bulan ini
+        //  Hitung hari kerja bulan ini
         $startOfMonth = Carbon::now()->startOfMonth();
         $endOfMonth = Carbon::now()->endOfMonth();
         $period = CarbonPeriod::create($startOfMonth, $endOfMonth);
         $total_hari_kerja = collect($period)->filter(fn($d) => !$d->isWeekend())->count();
 
-        // 📈 Persentase kehadiran sekolah
+        //  Persentase kehadiran sekolah
         $total_hadir = Kehadiran::where('kehadiran', 'hadir')
             ->whereBetween('tanggal', [$startOfMonth, $endOfMonth])
             ->count();
@@ -71,8 +71,8 @@ class DashboardController extends Controller
             ? round(($total_hadir / $total_kehadiran_ideal) * 100, 2)
             : 0;
 
-        // 🧮 Rekap kehadiran per siswa (Top 3)
-        // 🧮 Rekap kehadiran per siswa (Top 3)
+        
+        //  Rekap kehadiran per siswa (Top 3)
 $rekap = Kehadiran::select('murid_id')
     ->selectRaw('SUM(CASE WHEN kehadiran IN ("Hadir", "terlambat") THEN 1 ELSE 0 END) as hadir')
     ->groupBy('murid_id')
@@ -82,8 +82,8 @@ $rekap = Kehadiran::select('murid_id')
         $hadir = (int) $r->hadir;
         $percent = $total_hari_kerja > 0 ? round(($hadir / $total_hari_kerja) * 100) : 0;
 
-        // ✅ Tentukan avatar hybrid dengan fallback aman
-        $avatarUrl = asset('default-avatar.png'); // default dulu
+        //  Tentukan avatar hybrid dengan fallback aman
+        $avatarUrl = asset('default-avatar.png');
 
         if ($user) {
             if ($user->avatar_path && Storage::disk('public')->exists($user->avatar_path)) {
@@ -123,13 +123,31 @@ $rekap = Kehadiran::select('murid_id')
                 return $u;
             });
 
-        // ⚽ Data eskul
-        $eskuls = Eskul::withCount(['siswa as anggota_count'])
-            ->latest()
-            ->take(5)
-            ->get();
+        //  Data eskul
+        $eskuls = Eskul::with([
+        'absensiEskul' => function ($q) {
+            $q->select('id', 'eskul_id', 'day_of_week', 'jam_mulai', 'jam_selesai', 'is_recurring')
+              ->where('is_recurring', true);
+        },
+    ])
+    ->withCount(['siswa as anggota_count'])
+    ->latest()
+    ->take(5)
+    ->get()
+    ->map(function ($eskul) {
+        $schedules = $eskul->absensiEskul->map(fn($a) => [
+            'day_of_week' => (int) $a->day_of_week,
+            'jam_mulai' => $a->jam_mulai,
+            'jam_selesai' => $a->jam_selesai,
+        ])->values();
 
-        // 📤 Kirim ke Inertia
+        return [
+            'id' => $eskul->id,
+            'nama' => $eskul->nama,
+            'anggota_count' => $eskul->anggota_count,
+            'schedules' => $schedules,
+        ];
+    });
         Log::info('Avatar URL Sample', [
             'rekap_sample_avatar' => $rekap->first()['avatar'] ?? null
         ]);

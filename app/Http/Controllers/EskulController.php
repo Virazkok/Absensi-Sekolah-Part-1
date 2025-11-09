@@ -80,13 +80,13 @@ public function submitKehadiran(Request $request, AbsensiEskul $absensi)
         $fotoPath = null;
 
         if ($request->input('status') === 'Hadir') {
-            // Tangani upload file fisik
+            
             if ($request->hasFile('foto')) {
                 $file = $request->file('foto');
                 $filename = 'kehadiran_' . Auth::id() . '_' . time() . '.' . $file->getClientOriginalExtension();
                 $fotoPath = $file->storeAs('kehadiran_eskul', $filename, 'public');
             }
-            // Tangani base64 string (fallback dari mobile)
+            
             elseif ($request->filled('foto')) {
                 $fotoInput = $request->input('foto');
                 if (Str::startsWith($fotoInput, 'data:image')) {
@@ -110,12 +110,12 @@ public function submitKehadiran(Request $request, AbsensiEskul $absensi)
             'tanggal'          => now()->toDateString(),
             'jam_absen'        => now()->format('H:i:s'),
             'status'           => $request->input('status'),
-            'foto'             => $fotoPath, // hanya path, bukan isi base64
+            'foto'             => $fotoPath, 
         ]);
 
         return response()->json(['success' => true]);
     } catch (\Throwable $e) {
-        Log::error('❌ Error submit kehadiran: '.$e->getMessage());
+        Log::error(' Error submit kehadiran: '.$e->getMessage());
         return response()->json(['error' => 'Server error: '.$e->getMessage()], 500);
     }
 }

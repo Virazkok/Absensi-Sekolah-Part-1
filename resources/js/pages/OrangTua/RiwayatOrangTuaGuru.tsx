@@ -72,8 +72,6 @@ export default function RiwayatOrangTuaGuru() {
       setLoading(false);
     }
   }
-
-  // 📅 Range tanggal mingguan
   function getWeekRange(offset: number) {
     const now = new Date();
     const current = new Date(now);
@@ -196,48 +194,46 @@ export default function RiwayatOrangTuaGuru() {
       )}
 
       {/* Table */}
-<div className="bg-white rounded-xl shadow overflow-x-auto">
-  <table className="w-full text-sm">
-    <thead className="bg-gray-50">
-      <tr>
-        <th className="p-2 text-center whitespace-nowrap">Nama</th>
-        <th className="p-2 text-center whitespace-nowrap">NIS</th>
-        <th className="p-2 text-center whitespace-nowrap">Kelas</th>
-        {type === "eskul" && <th className="p-2 text-center whitespace-nowrap">Nama Eskul</th>}
-        {type === "event" && <th className="p-2 text-center whitespace-nowrap">Nama Event</th>}
-        <th className="p-2 text-center ">Total Hadir</th>
-        {type !== "event" && <th className="p-2 text-center ">Total Absen</th>}
-      </tr>
-    </thead>
-    <tbody>
-      {loading ? (
-        <tr><td colSpan={6} className="p-4 text-center">Memuat...</td></tr>
-      ) : data.length === 0 ? (
-        <tr><td colSpan={6} className="p-4 text-center">Tidak ada data</td></tr>
-      ) : (
-        data.map((row, idx) => (
-          <tr key={idx} className="border-t">
-            <td className="p-2 whitespace-nowrap">{row.student_name || row.nama}</td>
-            <td className="p-2 whitespace-nowrap">{row.nis}</td>
-            <td className="p-2 whitespace-nowrap">{row.kelas}</td>
-            {type === "eskul" && (
-              <td className="p-2 whitespace-nowrap">{row.nama || row.nama_eskul}</td>
+      <div className="bg-white rounded-xl shadow overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="bg-gray-50">
+            <tr>
+              <th className="p-2 text-center whitespace-nowrap">Nama</th>
+              <th className="p-2 text-center whitespace-nowrap">NIS</th>
+              <th className="p-2 text-center whitespace-nowrap">Kelas</th>
+              {type === "eskul" && <th className="p-2 text-center whitespace-nowrap">Nama Eskul</th>}
+              {type === "event" && <th className="p-2 text-center whitespace-nowrap">Nama Event</th>}
+              <th className="p-2 text-center ">Total Hadir</th>
+              {type !== "event" && <th className="p-2 text-center ">Total Absen</th>}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr><td colSpan={6} className="p-4 text-center">Memuat...</td></tr>
+            ) : data.length === 0 ? (
+              <tr><td colSpan={6} className="p-4 text-center">Tidak ada data</td></tr>
+            ) : (
+              data.map((row, idx) => (
+                <tr key={idx} className="border-t">
+                  <td className="p-2 whitespace-nowrap">{row.student_name || row.nama}</td>
+                  <td className="p-2 whitespace-nowrap">{row.nis}</td>
+                  <td className="p-2 whitespace-nowrap">{row.kelas}</td>
+                  {type === "eskul" && (
+                    <td className="p-2 whitespace-nowrap">{row.nama || row.nama_eskul}</td>
+                  )}
+                  {type === "event" && (
+                    <td className="p-2 whitespace-nowrap">{row.nama_event}</td>
+                  )}
+                  <td className="p-2 whitespace-nowrap">{row.total_hadir}</td>
+                  {type !== "event" && (
+                    <td className="p-2 whitespace-nowrap">{row.absen}</td>
+                  )}
+                </tr>
+              ))
             )}
-            {type === "event" && (
-              <td className="p-2 whitespace-nowrap">{row.nama_event}</td>
-            )}
-            <td className="p-2 whitespace-nowrap">{row.total_hadir}</td>
-            {type !== "event" && (
-              <td className="p-2 whitespace-nowrap">{row.absen}</td>
-            )}
-          </tr>
-        ))
-      )}
-    </tbody>
-  </table>
-</div>
-
-
+          </tbody>
+        </table>
+      </div>
       <BottomNavbarOrtu />
     </div>
   );

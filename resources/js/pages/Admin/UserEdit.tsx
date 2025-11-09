@@ -32,7 +32,7 @@ export default function EditUserModal({ user, kelas, eskuls, onClose }: any) {
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
-    post(`/Admin/UserDetail/${user.id}`, {
+    post(`/Admin/UserManagement/UserDetail/${user.id}`, {
       onSuccess: () => {
         onClose();
         window.location.reload();

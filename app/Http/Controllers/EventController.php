@@ -19,7 +19,6 @@ use Illuminate\Support\Facades\Storage;
 
 class EventController extends Controller
 {
-    // EventController@index
 public function index(Request $request)
 {
     $user = $request->user()->loadMissing(['kelas', 'murid.kelas']);
@@ -39,7 +38,7 @@ public function index(Request $request)
             'start_date' => $e->start_date,
             'end_date' => $e->end_date,
             'registrations' => $e->registrations,
-            'image' => $e->image, // ✅ kirim base64 langsung
+            'image' => $e->image, 
         ]),
         'auth'   => [
             'user' => [
@@ -75,7 +74,7 @@ public function index(Request $request)
         'is_published'          => 'boolean',
     ]);
 
-   // Konversi ke WIB sebelum menyimpan
+   
     $validated['start_date'] = Carbon::parse($validated['start_date']); 
     $validated['end_date']   = Carbon::parse($validated['end_date']);
 
@@ -123,13 +122,12 @@ public function index(Request $request)
         ->where('user_id', $user->id)
         ->firstOrFail();
 
-    // Token selalu baru
+    
     $registration->qr_token = Str::random(32);
     $registration->save();
-
     $payload = json_encode([
-        'token'   => $registration->qr_token,
-        'user_id' => $registration->user_id,
+        'qr_token' => $registration->qr_token,
+        'user_id'  => $registration->user_id,
         'event_id' => $registration->event_id
     ]);
 
@@ -142,6 +140,7 @@ public function index(Request $request)
         ]
     ]);
 }
+
 
  public function destroy(Event $event)
     {
@@ -158,15 +157,11 @@ public function index(Request $request)
         
         return response()->json($event);
     }
-    // app/Http/Controllers/EventController.php
-    // EventController
 public function manageEvents()
 {
     $events = Event::latest()->get();
     return inertia('Admin/AdminEvent', ['events' => $events]);
 }
-
-// EventController
 public function storeEvent(Request $request)
 {
     $validated = $request->validate([
@@ -201,12 +196,13 @@ public function togglePublish(Request $request, $eventId)
 
     return redirect()->route('admin.events.manage')->with('success', 'Status publish berhasil diubah');
 }
-
-// ================== ADMIN EVENT DETAIL ==================
 public function adminDetailEvent($id)
 {
-    $event = Event::with(['registrations.user.kelas', 'attendances.user.kelas'])
-        ->findOrFail($id);
+    $event = Event::with([
+        'registrations.user.kelas',
+        'attendances.user.kelas',
+        'attendances.murid.kelas'
+    ])->findOrFail($id);
 
     return Inertia::render('Admin/AdminEventDetail', [
         'event' => [
@@ -218,17 +214,21 @@ public function adminDetailEvent($id)
             'end_date' => $event->end_date,
             'location' => $event->location,
             'is_published' => $event->is_published,
-            'image_url' => $event->image_url, // ✅ akses dari accessor model
+            'image_url' => $event->image_url,
         ],
         'registrations' => $event->registrations,
-        'attendances' => $event->attendances,
+        // kirim accessor biar aman
+        'attendances' => $event->attendances->map(fn($a) => [
+            'id' => $a->id,
+            'display_name' => $a->display_name,
+            'kelas_name' => $a->kelas_name,
+            'status' => $a->status ?? '-',
+        ]),
         'auth' => [
             'user' => auth()->user(),
         ],
     ]);
 }
-
-
 public function updateEvent(Request $request, $id)
 {
     $validated = $request->validate([
@@ -293,15 +293,11 @@ public function detailEvent($id)
     ]);
 }
 
-// Add these methods to your existing EventController
-
 public function showRegistrationForm(Event $event)
 {
     if (!$event->is_published) {
         abort(403, 'Event belum dipublish');
     }
-
-    // Load user dengan relasi yang diperlukan
     $user = auth()->user()->load(['kelas', 'murid.kelas']);
 
     if (!$user->kelas && !optional($user->murid)->kelas) {
@@ -327,19 +323,14 @@ public function showConfirmation(Event $event)
         ->where('user_id', auth()->id())
         ->with('user.murid.kelas')
         ->firstOrFail();
-
-    // ASUSMSI data di database sudah WIB, langsung parse tanpa konversi
     $startDate = Carbon::parse($event->start_date);
     $endDate = Carbon::parse($event->end_date);
-    
-    // Validasi waktu dalam WIB
     $canGenerateQR = Carbon::now('Asia/Jakarta')->between($startDate, $endDate);
 
     return inertia('EventMurid/EventConfirmation', [
         'event' => array_merge($event->toArray(), [
             'start_date' => $startDate->format('Y-m-d H:i:s'),
             'end_date' => $endDate->format('Y-m-d H:i:s'),
-            // Tambahkan waktu dalam format ISO tanpa timezone
             'start_date_plain' => $startDate->format('Y-m-d\TH:i'),
             'end_date_plain' => $endDate->format('Y-m-d\TH:i')
         ]),
@@ -356,11 +347,10 @@ public function showConfirmation(Event $event)
 public function showQR(Event $event)
 {
     $registration = $event->registrations()
-        ->with(['user.murid.kelas']) // load relasi biar nama & kelas ikut
+        ->with(['user.murid.kelas'])
         ->where('user_id', auth()->id())
         ->firstOrFail();
 
-    // Pastikan event sedang berlangsung
     $startDate = Carbon::parse($event->start_date);
     $endDate = Carbon::parse($event->end_date);
 
@@ -369,12 +359,10 @@ public function showQR(Event $event)
             ->with('error', 'QR hanya tersedia saat event berlangsung');
     }
 
-    // Buat token baru setiap kali generate
     $registration->qr_token = Str::random(32);
     $registration->save();
-
     $payload = json_encode([
-        'token'    => $registration->qr_token,
+        'qr_token' => $registration->qr_token,
         'user_id'  => $registration->user_id,
         'event_id' => $registration->event_id
     ]);
@@ -383,7 +371,7 @@ public function showQR(Event $event)
 
     return Inertia::render('EventMurid/EventQR', [
         'event'        => $event,
-        'registration' => $registration, // << kirim ke Inertia
+        'registration' => $registration,
         'qr_code'      => $qrSvg
     ]);
 }
@@ -392,8 +380,6 @@ public function showQR(Event $event)
 
 public function scanPage(): Response
     {
-        // Kalau mau kirim data ke halaman scanner, taruh di sini
-        // Misalnya list event, atau event aktif sekarang
         $events = Event::latest()->get();
 
         return Inertia::render('Admin/EventScanner', [

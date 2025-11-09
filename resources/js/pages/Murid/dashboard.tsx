@@ -7,7 +7,8 @@ import { PageProps } from '@inertiajs/core';
 import BottomNavbar from '@/components/Murid/BottomNavbar';
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL =  window.location.origin; // <-- tidak ada spasi
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+
 
 export default function QrCode({ qrCode: initialQrCode, auth }: { qrCode: string } & any) {
   const [qrCode, setQrCode]   = useState<string>(initialQrCode);
@@ -30,16 +31,12 @@ const fetchQrCode = () => {
   let fetch: NodeJS.Timeout;
 
   const loop = () => {
-    // 1️⃣ every 20 s
     fetch = setInterval(() => {
-      fetchQrCode();           // fetch new QR
+      fetchQrCode();           // fetch QR
     }, 20000);
-
-    // 2️⃣ every 1 s
     tick = setInterval(() => {
       setCount((c) => {
         if (c === 0) {
-                // force fetch NOW
           return 20;           // reset to 20 s
         }
         return c - 1;
@@ -47,7 +44,7 @@ const fetchQrCode = () => {
     }, 1000);
   };
 
-  loop();                       // start immediately
+  loop();  
   return () => {
     clearInterval(tick);
     clearInterval(fetch);

@@ -6,7 +6,8 @@ import axios from "axios";
 import BottomNavbar from "@/components/Murid/BottomNavbar";
 
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL =  window.location.origin;
+axios.defaults.baseURL = import.meta.env.VITE_API_URL;
+
 
 interface Student {
   id: number;
@@ -14,8 +15,6 @@ interface Student {
   avatar?: string;
   kelas?: { name: string };
 }
-
-// Format tanggal hanya tanggal dan bulan (contoh: 1 Juli)
 const formatShortDate = (dateString: string) => {
   if (!dateString || dateString === 'N/A') return '-';
   
@@ -29,8 +28,6 @@ const formatShortDate = (dateString: string) => {
     return dateString;
   }
 };
-
-// Format jam dari string waktu
 const formatTime = (timeString?: string) => {
   if (!timeString || timeString === '-') return "-";
   return timeString.includes(':') ? timeString.split(':').slice(0, 2).join(':') : timeString;
@@ -159,8 +156,6 @@ export default function RiwayatPage() {
         </>
       );
     }
-    
-    // Untuk event, selalu tampilkan "Mengikuti" karena data sudah ada di database
     return (
       <>
         <td className="py-2 px-2">{formatShortDate(row.tanggal)}</td>
