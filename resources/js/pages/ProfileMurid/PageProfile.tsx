@@ -43,8 +43,11 @@ const PageProfile: React.FC = () => {
   if (!user || !stats) return <p className="p-4">Loading...</p>;
 
   const handleLogout = () => {
-  router.post('/logout');
+  router.post('/logout', {}, {
+    onFinish: () => router.visit('/login'),
+  });
 };
+
 
   return (
     <>
