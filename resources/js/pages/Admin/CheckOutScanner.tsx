@@ -29,6 +29,7 @@ const Dashboard: React.FC<DashboardProps> = ({ auth }) => {
   const [scanMode, setScanMode] = useState(false);
   const { props } = usePage<Props>();
   const { user } = props;
+  const [openEditAccount, setOpenEditAccount] = useState(false);
 
   const handleScan = async (qrData: string) => {
     try {
@@ -62,6 +63,12 @@ const Dashboard: React.FC<DashboardProps> = ({ auth }) => {
     return match ? decodeURIComponent(match[2]) : null;
   }
 
+  const handleLogout = () => {
+  router.post('/logout', {}, {
+    onFinish: () => router.visit('/login'),
+  });
+};
+
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
           <Head title="Dashboard" />
@@ -71,28 +78,28 @@ const Dashboard: React.FC<DashboardProps> = ({ auth }) => {
     
             {/* Main content */}
             <main className="flex-1 overflow-x-auto p-4">
-              {/* Header */}
-              <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
-                <h1 className="text-2xl font-bold">Check Out Scanner</h1>
-                <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
-                  <div className="flex items-center gap-2 p-2">
-                    <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
-                    <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
-                  </div>
-                  <div>
-                  <button className="p-2 rounded bg-white">⚙️</button>
-                  <button className="p-2 rounded bg-white">🔓</button>
-                  </div>
+               {/* Header */}
+                <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
+                  <h1 className="text-2xl font-bold">Check Out Scanner</h1>
+                  <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
+                    <div className="flex items-center gap-2 p-2">
+                      <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                      <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
+                    </div>
+                    <div>
+                    <button onClick={() => setOpenEditAccount(true)} className="p-2 rounded bg-white">⚙️</button>
+                    <button onClick={handleLogout} className="p-2 rounded bg-white">🔓</button>
+                    </div>
                   
                 </div>
               </div>
-            <div className="flex-1 flex flex-col items-center justify-center mt-45">
+            <div className="flex-1 flex flex-col items-center justify-center mt-15">
                 {!scanMode ? (
                   <>
                     {/* Placeholder kamera */}
-                    <div className="w-full h-50 flex items-center justify-center bg-white border-b">
+                    <div className="w-full h-100 flex items-center justify-center bg-white border-b">
                       <img src='/icons/mdi--camera-off-outline.svg' 
-                      className="w-20 h-20 text-gray-400 pb-[20px] mb-[120px]" />
+                      className="w-20 h-20 text-gray-400 pb-[20px]" />
                     </div>
               
                     <div className="mt-6">

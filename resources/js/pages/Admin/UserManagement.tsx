@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { usePage, Link, Head } from "@inertiajs/react";
+import { usePage, Link, Head, router } from "@inertiajs/react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -37,7 +37,7 @@ type Props = {
 export default function UserManagement() {
   const { props } = usePage<Props>();
   const { users } = props;
-
+  const [openEditAccount, setOpenEditAccount] = useState(false);
   const [search, setSearch] = useState("");
   const [filterRole, setFilterRole] = useState("all");
 
@@ -49,6 +49,12 @@ export default function UserManagement() {
     });
   }, [users.data, search, filterRole]);
 
+  const handleLogout = () => {
+  router.post('/logout', {}, {
+    onFinish: () => router.visit('/login'),
+  });
+};
+
   return (
     <div className="min-h-screen bg-[#F8F8F8] text-gray-900">
       <Head title="User Management" />
@@ -58,28 +64,19 @@ export default function UserManagement() {
 
         {/* Konten utama */}
         <main className="flex-1 p-4 mr-3">
-          {/* Header */}
-          <div className="flex flex-wrap justify-between items-center mb-10 gap-3">
-            <h1 className="text-2xl font-bold">User Management</h1>
+           {/* Header */}
+          <div className="flex flex-wrap justify-between items-center mb-6 gap-3">
+            <h1 className="text-2xl font-bold">Dashboard</h1>
             <div className="flex items-center bg-white p-2 gap-10 rounded-xl shadow border">
               <div className="flex items-center gap-2 p-2">
-                <img
-                  src={
-                    props.auth?.user?.avatar ??
-                    "/images/avatar-placeholder.png"
-                  }
-                  alt="avatar"
-                  className="w-8 h-8 rounded-full object-cover"
-                />
-                <div className="text-[16px]">
-                  {props.auth?.user?.name ?? "Admin"}
-                </div>
+                <img src={props.auth?.user?.avatar ?? '/images/avatar-placeholder.png'} alt="avatar" className="w-8 h-8 rounded-full object-cover" />
+                <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
               </div>
               <div>
-                <button className="p-2 rounded bg-white">⚙️</button>
-                <button className="p-2 rounded bg-white">🔓</button>
+              <button onClick={() => setOpenEditAccount(true)} className="p-2 rounded bg-white">⚙️</button>
+              <button onClick={handleLogout} className="p-2 rounded bg-white">🔓</button>
               </div>
-            </div>
+          </div>
           </div>
 
           <div className="flex justify-between items-center mb-6">

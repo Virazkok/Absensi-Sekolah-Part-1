@@ -328,6 +328,7 @@ const [reportPage, setReportPage] = useState<number>(1);
 const REPORT_PAGE_SIZE = 5;
 const totalReportItems = filteredReport.length;
 const totalReportPages = Math.max(1, Math.ceil(totalReportItems / REPORT_PAGE_SIZE));
+const [openEditAccount, setOpenEditAccount] = useState(false);
 
 const paginatedReport = useMemo(() => {
   const startIdx = (reportPage - 1) * REPORT_PAGE_SIZE;
@@ -351,6 +352,14 @@ useEffect(() => {
   }
 };
 
+ const handleLogout = () => {
+  router.post('/logout', {}, {
+    onFinish: () => router.visit('/login'),
+  });
+};
+
+
+
   return (
     <div className="min-h-screen bg-gray-100 text-gray-800 flex flex-col">
       <Head title="Dashboard" />
@@ -369,8 +378,8 @@ useEffect(() => {
                 <div className="text-[16px]">{props.auth?.user?.name ?? 'Admin'}</div>
               </div>
               <div>
-              <button className="p-2 rounded bg-white">⚙️</button>
-              <button className="p-2 rounded bg-white">🔓</button>
+              <button onClick={() => setOpenEditAccount(true)} className="p-2 rounded bg-white">⚙️</button>
+              <button onClick={handleLogout} className="p-2 rounded bg-white">🔓</button>
               </div>
               
             </div>
@@ -794,7 +803,13 @@ useEffect(() => {
             onClose={() => setSelectedEskul(null)}
           />
         )}
-                    
+        {openEditAccount && (
+                  <EditAccountModal
+                    user={user}
+                    eskuls={eskulList}
+                    onClose={() => setOpenEditAccount(false)}
+                  />
+                )}
       </div>
   );
 }
