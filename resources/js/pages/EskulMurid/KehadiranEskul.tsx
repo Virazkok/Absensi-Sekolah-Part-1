@@ -1,7 +1,7 @@
 import { Head, usePage } from "@inertiajs/react";
 import AuthenticatedLayout from "@/layouts/AuthenticatedLayout";
 import BottomNavbar from "@/components/Murid/BottomNavbar";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CameraIcon } from "lucide-react";
 import axios from "axios";
 import { PageProps as InertiaPageProps } from "@inertiajs/core";
@@ -10,8 +10,9 @@ interface User {
   id: number;
   name: string;
   email: string;
-  kelas?: string | null;
-  avatar: string | null;
+  kelas: { id: number; name: string };
+  nis: string;
+  avatar?: string;
 }
 
 interface Absensi {
@@ -37,7 +38,7 @@ type PageProps = InertiaPageProps & {
 export default function KehadiranEskul() {
   const { props } = usePage<PageProps>();
   const { auth, absensi, kehadiran } = props;
-
+  const [user, setUser] = useState<User | null>(null);
   const [image, setImage] = useState<string | null>(null);
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoBase64, setFotoBase64] = useState<string | null>(null);
@@ -108,6 +109,10 @@ export default function KehadiranEskul() {
     }
   };
 
+  useEffect(() => {
+      axios.get("/api/student/me").then((res) => setUser(res.data));
+    }, []);
+
   return (
     <AuthenticatedLayout user={auth.user}>
       <Head title="Kehadiran Eskul" />
@@ -121,10 +126,8 @@ export default function KehadiranEskul() {
             className="w-14 h-14 rounded-full object-cover"
           />
           <div>
-            <h2 className="text-lg font-semibold">{auth.user.name}</h2>
-            <p className="text-gray-600 text-sm">
-              {auth.user.kelas ?? "Kelas belum terisi"}
-            </p>
+             <h1 className="text-xl font-semibold">{user?.name}</h1>
+            <p className="text-sm">{user?.kelas?.name}</p>
           </div>
         </div>
 

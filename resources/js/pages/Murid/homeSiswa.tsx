@@ -2,17 +2,26 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import BottomNavbar from '@/components/Murid/BottomNavbar';
-import { Student } from '@/types';
+import { Student} from '@/types';
 import { Head } from '@inertiajs/react';
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  kelas: { id: number; name: string };
+  nis: string;
+  avatar?: string;
+}
+
 
 const HomeSiswa = () => {
   /* ---------- STATE ---------- */
   const [time, setTime] = useState(new Date());
-  const [user, setUser] = useState<Student | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const [checkInStatus, setCheckInStatus] = useState('--');
   const [checkInTime, setCheckInTime] = useState<string | null>(null);
@@ -26,22 +35,10 @@ const HomeSiswa = () => {
     return () => clearInterval(timer);
   }, []);
 
-  /* ---------- INIT USER ---------- */
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (storedUser && storedUser.id) {
-      console.log(" User dari localStorage:", storedUser); // DEBUG
-      setUser(storedUser);
-    }
+   useEffect(() => {
+    axios.get("/api/student/me").then((res) => setUser(res.data));
   }, []);
 
-  /* ---------- DEBUG RENDER ---------- */
-  useEffect(() => {
-    if (user) {
-      console.log("👤 State user sekarang:", user);
-      console.log("🖼 Avatar yang dipakai:", user.avatar);
-    }
-  }, [user]);
 
   /* ---------- Sinkron BACKEND ---------- */
   useEffect(() => {

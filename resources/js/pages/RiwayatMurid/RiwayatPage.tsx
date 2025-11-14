@@ -8,6 +8,14 @@ import BottomNavbar from "@/components/Murid/BottomNavbar";
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_API_URL;
 
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  kelas: { id: number; name: string };
+  nis: string;
+  avatar?: string;
+}
 
 interface Student {
   id: number;
@@ -39,7 +47,7 @@ export default function RiwayatPage() {
   const [data, setData] = useState<any[]>([]);
   const [summary, setSummary] = useState<any>({});
   const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState<Student | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [searchEvent, setSearchEvent] = useState("");
 
   const [currentWeek, setCurrentWeek] = useState(0);
@@ -52,10 +60,9 @@ export default function RiwayatPage() {
   ];
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    if (storedUser && storedUser.id) setUser(storedUser);
-  }, []);
-
+      axios.get("/api/student/me").then((res) => setUser(res.data));
+    }, []);
+    
   useEffect(() => {
     setData([]);
     setSummary({});

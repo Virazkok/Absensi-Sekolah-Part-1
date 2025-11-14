@@ -6,6 +6,7 @@
   import { FormEvent, useEffect, useState } from "react";
   import { Student } from "@/types";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 
   interface AuthUser {
     id: number;
@@ -37,6 +38,15 @@ import { Button } from "@/components/ui/button";
     }[];
   }
 
+  interface User {
+  id: number;
+  name: string;
+  email: string;
+  kelas: { id: number; name: string };
+  nis: string;
+  avatar?: string;
+}
+
   interface PageProps {
     auth: {
       user: AuthUser;
@@ -49,23 +59,7 @@ import { Button } from "@/components/ui/button";
     const page = usePage();
     const props = page.props as unknown as PageProps;
     const { auth, eskul, absensiHariIni } = props;
-    const [user, setUser] = useState<Student | null>(null);
-
-    useEffect(() => {
-      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-      if (storedUser && storedUser.id) {
-        setUser(storedUser);
-      } else {
-        setUser({
-          id: auth.user.id,
-          nama: auth.user.name,
-          email: auth.user.email,
-          foto: auth.user.foto || "/default-avatar.png",
-          kelas: auth.user.kelas || { id: 0, name: "Kelas" },
-        } as unknown as Student);
-      }
-    }, [auth]);
-
+    const [user, setUser] = useState<User | null>(null);
     const [step, setStep] = useState<"list" | "form">("list");
     const [selectedAbsensi, setSelectedAbsensi] = useState<AbsensiItem | null>(null);
     const [image, setImage] = useState<string | null>(null);
@@ -74,6 +68,10 @@ import { Button } from "@/components/ui/button";
       absensi_eskul_id: "",
       foto: null as File | null,
     });
+
+    useEffect(() => {
+    axios.get("/api/student/me").then((res) => setUser(res.data));
+  }, []);
 
     const handleIsiAbsen = (absensi: AbsensiItem) => {
       setSelectedAbsensi(absensi);
@@ -129,9 +127,9 @@ import { Button } from "@/components/ui/button";
               className="w-14 h-14 rounded-full object-cover border"
             />
             <div>
-              <h1 className="text-lg font-semibold text-gray-600">{user?.nama || auth.user.name}</h1>
+              <h1 className="text-lg font-semibold text-gray-600">{user?.name}</h1>
               <p className="text-sm text-gray-600">
-                {user?.kelas?.name || auth.user.kelas?.name || "Kelas"}
+                {user?.kelas?.name || "Kelas"}
               </p>
             </div>
           </div>
